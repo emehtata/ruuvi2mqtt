@@ -15,8 +15,10 @@ from settings import ruuvis
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.WARNING,
+    level=logging.INFO,
     datefmt='%Y-%m-%d %H:%M:%S')
+
+myhostname=platform.node()
 
 found_ruuvis = []
 
@@ -30,7 +32,7 @@ def send_single(jdata, keyname, client):
   client.publish(topic, jdata[keyname])
 
 def handle_data(found_data):
-  logging.info(found_data)
+  logging.debug(found_data)
   try:
     room=ruuvis[found_data[0]]
   except Exception as e:
@@ -44,13 +46,13 @@ def handle_data(found_data):
   jdata.update( { "room": room } )
   jdata.update( { "client": myhostname } )
   my_data=json.dumps(jdata).replace("'", '"')
-  logging.info(my_data)
+  logging.debug(my_data)
   for b in brokers:
     clients[b].publish(topic, my_data)
     if send_single_values:
       for j in jdata:
         send_single(jdata, j, clients[b])
-  logging.info("-"*40)
+  logging.debug("-"*40)
 
 def on_connect(client, userdata, flags, rc):
     logging.info(f"Connected, returned code {rc}")
@@ -63,17 +65,25 @@ def on_disconnect(client, userdata, rc):
     if rc != 0:
         logging.error("Unexpected MQTT disconnection.")
 
-if __name__ == '__main__':
-  myhostname=platform.node()
-  if len(sys.argv) > 1 and sys.argv[1] == '-s':
-    send_single_values = True
+def on_publish(client, userdata, rc):
+    logging.info("Data published")
+
+def connect_brokers(brokers):
   for b in brokers:
     logging.info(f"Connecting Broker: {b} {brokers[b]}")
     clients[b]=mqtt.Client(f"{myhostname}-ruuviclient")
     clients[b].on_connect = on_connect
+    clients[b].on_publish = on_publish
     clients[b].on_disconnect = on_disconnect
-    clients[b].connect(b, port=brokers[b]['port'])
-    logging.info(f"Connection OK {clients[b]}  {brokers[b]}")
+    clients[b].connect_async(b, port=brokers[b]['port'])
+    logging.info(f"Connection OK {clients[b]} {brokers[b]}")
+    clients[b].loop_start()
+  return clients
+
+if __name__ == '__main__':
+  if len(sys.argv) > 1 and sys.argv[1] == '-s':
+    send_single_values = True
+  clients=connect_brokers(brokers)
   try:
     RuuviTagSensor.get_data(handle_data)
   except Exception as e:
