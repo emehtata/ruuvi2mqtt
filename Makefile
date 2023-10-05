@@ -21,3 +21,12 @@ run_mount:
 
 run_bash:
 	docker run --rm -it --entrypoint bash $(IMAGE)
+
+logs:
+	docker logs $(NAME)
+
+restart:
+	docker restart $(NAME)
+
+start:
+	docker start $(NAME)

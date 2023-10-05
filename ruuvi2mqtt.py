@@ -45,6 +45,7 @@ def handle_data(found_data):
   jdata=found_data[1]
   jdata.update( { "room": room } )
   jdata.update( { "client": myhostname } )
+  jdata.update( { "ts": time.time() } )
   my_data=json.dumps(jdata).replace("'", '"')
   logging.debug(my_data)
   for b in brokers:
@@ -66,7 +67,7 @@ def on_disconnect(client, userdata, rc):
         logging.error("Unexpected MQTT disconnection.")
 
 def on_publish(client, userdata, rc):
-    logging.info("Data published")
+    logging.debug("Data published")
 
 def connect_brokers(brokers):
   for b in brokers:
