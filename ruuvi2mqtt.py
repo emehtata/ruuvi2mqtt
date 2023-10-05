@@ -3,7 +3,7 @@
 
 import logging
 import struct
-import time
+import datetime
 import paho.mqtt.client as mqtt
 import json
 import sys
@@ -32,6 +32,7 @@ def send_single(jdata, keyname, client):
   client.publish(topic, jdata[keyname])
 
 def handle_data(found_data):
+  now=datetime.datetime.now(tz=datetime.timezone.utc)
   logging.debug(found_data)
   try:
     room=ruuvis[found_data[0]]
@@ -45,7 +46,8 @@ def handle_data(found_data):
   jdata=found_data[1]
   jdata.update( { "room": room } )
   jdata.update( { "client": myhostname } )
-  jdata.update( { "ts": time.time() } )
+  jdata.update( { "ts": now.timestamp() } )
+  jdata.update( { "ts_iso": now.isoformat() } )
   my_data=json.dumps(jdata).replace("'", '"')
   logging.debug(my_data)
   for b in brokers:
