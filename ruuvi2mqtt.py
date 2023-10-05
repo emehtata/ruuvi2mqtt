@@ -40,6 +40,8 @@ def handle_data(found_data):
     room=found_data[0].replace(':','')
     if not room in found_ruuvis:
       logging.warning(f"Not found {found_data[0]}. Using topic home/{room}")
+      with open(f"detected_ruuvis.txt", "a") as fp:
+          fp.write(f"{now.isoformat()} {room}\n")
       found_ruuvis.append(room)
   topic="home/"+room
   logging.debug(room)

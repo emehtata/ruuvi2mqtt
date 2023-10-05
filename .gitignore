@@ -161,3 +161,4 @@ cython_debug/
 
 # Custom
 settings.py
+detected_ruuvis.txt
