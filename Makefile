@@ -10,10 +10,10 @@ run:
 stop:
 	docker stop $(NAME)
 
-rm:
+rm: stop
 	docker rm $(NAME)
 
-rmi:
+rmi: stop rm
 	docker rmi $(IMAGE)
 
 run_mount:
