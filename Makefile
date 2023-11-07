@@ -4,10 +4,10 @@ NAME=$(IMAGE)
 TAG=localhost:5000/$(IMAGE)-$(MACH)
 
 build:
-	docker build . -t $(IMAGE)
+	docker build . -t $(TAG)
 
 run:
-	docker run -d --name $(NAME) --privileged --network=host --restart=unless-stopped $(IMAGE)
+	docker run -d --name $(NAME) --privileged --network=host --restart=unless-stopped $(TAG)
 
 stop:
 	docker stop $(NAME)
@@ -16,13 +16,13 @@ rm: stop
 	docker rm $(NAME)
 
 rmi: stop rm
-	docker rmi $(IMAGE)
+	docker rmi $(TAG)
 
 run_mount:
-	docker run -d --name $(NAME) --privileged --network=host --restart=unless-stopped -v $(PWD):/app $(IMAGE)
+	docker run -d --name $(NAME) --privileged --network=host --restart=unless-stopped -v $(PWD):/app $(TAG)
 
 run_bash:
-	docker run --rm -it --entrypoint bash $(IMAGE)
+	docker run --rm -it --entrypoint bash $(TAG)
 
 logs:
 	docker logs $(NAME)
@@ -32,9 +32,6 @@ restart:
 
 start:
 	docker start $(NAME)
-
-tag:
-	docker tag $(IMAGE) $(TAG)
 
 push:
 	docker push $(TAG)
