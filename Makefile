@@ -1,5 +1,6 @@
-IMAGE=ruuvi2mqtt
 NAME=$(IMAGE)
+TAG=localhost:5000/ruuvi2mqtt:$$(uname -m)
+IMAGE=$(TAG)
 
 build:
 	docker build . -t $(IMAGE)
@@ -30,3 +31,9 @@ restart:
 
 start:
 	docker start $(NAME)
+
+tag:
+	docker tag $(IMAGE) $(TAG)
+
+push:
+	docker push $(TAG)
