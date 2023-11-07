@@ -1,6 +1,7 @@
+MACH=$$(uname -m)
+IMAGE=ruuvi2mqtt
 NAME=$(IMAGE)
-TAG=localhost:5000/ruuvi2mqtt:$$(uname -m)
-IMAGE=$(TAG)
+TAG=localhost:5000/$(IMAGE)-$(MACH)
 
 build:
 	docker build . -t $(IMAGE)
