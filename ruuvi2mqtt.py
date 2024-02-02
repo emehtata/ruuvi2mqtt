@@ -2,12 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import struct
 import datetime
 import paho.mqtt.client as mqtt
 import json
 import sys
-import os
 import platform
 from ruuvitag_sensor.ruuvi import RuuviTagSensor
 from settings import brokers
@@ -31,17 +29,60 @@ def send_single(jdata, keyname, client):
   logging.info(f"{topic}: {jdata[keyname]}")
   client.publish(topic, jdata[keyname])
 
+def publish_discovery_config(room, found_data):
+
+  jdata = found_data[1]
+  sendvals = {
+    "temperature": "°C",
+    "humidity": "%",
+    "pressure": "hPa",
+    "battery": "mV"
+  }
+
+  i=0
+  for s in sendvals:
+    value = jdata[s]
+    payload = {
+      "device_class":f"{s}",
+      "state_topic":f"home/{room}",
+      "unit_of_measurement":f"{sendvals[s]}",
+      "value_template": "{{ value_json."+s+" }}",
+      "unique_id": f"ruuvi{jdata['mac']}{s}",
+      "object_id": f"{room}_{s}",
+      "device":{
+        "identifiers":[
+          f"{room}_{s}"
+        ]
+      }
+    }
+    if i==0:
+      payload["device"].update( { "name": f"{room}" } )
+      payload["device"].update( { "manufacturer": "Ruuvi" } )
+      payload["device"].update( { "model": "Ruuvitag" } )
+
+    i+=1
+    topic = f"homeassistant/sensor/{room}{s}/config"
+    my_data=json.dumps(payload).replace("'", '"')
+    for b in brokers:
+      clients[b].publish(topic, my_data)
+
+  return
+
 def handle_data(found_data):
   now=datetime.datetime.now(tz=datetime.timezone.utc)
   logging.debug(found_data)
   try:
     room=ruuvis[found_data[0]]
+    if not room in found_ruuvis:
+      publish_discovery_config(room, found_data)
+      found_ruuvis.append(room)
   except Exception as e:
     room=found_data[0].replace(':','')
     if not room in found_ruuvis:
       logging.warning(f"Not found {found_data[0]}. Using topic home/{room}")
       with open(f"detected_ruuvis.txt", "a") as fp:
           fp.write(f"{now.isoformat()} {room}\n")
+      publish_discovery_config(room, found_data)
       found_ruuvis.append(room)
   topic="home/"+room
   logging.debug(room)
