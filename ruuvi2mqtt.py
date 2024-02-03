@@ -39,9 +39,7 @@ def publish_discovery_config(room, found_data):
     "battery": "mV"
   }
 
-  i=0
   for s in sendvals:
-    value = jdata[s]
     payload = {
       "device_class":f"{s}",
       "state_topic":f"home/{room}",
@@ -49,19 +47,17 @@ def publish_discovery_config(room, found_data):
       "value_template": "{{ value_json."+s+" }}",
       "unique_id": f"ruuvi{jdata['mac']}{s}",
       "object_id": f"{room}_{s}",
+      "friendly_name": f"{room} {s}",
       "device":{
         "identifiers":[
-          f"{room}_{s}"
-        ]
+          f"{room}"
+        ],
+        "name": f"{room}",
+        "manufacturer": "Ruuvi",
+        "model": "Ruuvitag"
       }
     }
-    if i==0:
-      payload["device"].update( { "name": f"{room}" } )
-      payload["device"].update( { "manufacturer": "Ruuvi" } )
-      payload["device"].update( { "model": "Ruuvitag" } )
-
-    i+=1
-    topic = f"homeassistant/sensor/{room}{s}/config"
+    topic = f"homeassistant/sensor/{room}_{s}/config"
     my_data=json.dumps(payload).replace("'", '"')
     for b in brokers:
       clients[b].publish(topic, my_data)
