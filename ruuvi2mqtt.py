@@ -75,6 +75,7 @@ def handle_data(found_data):
   except Exception as e:
     room=found_data[0].replace(':','')
     if not room in found_ruuvis:
+      room=f"Ruuvi-{room}"
       logging.warning(f"Not found {found_data[0]}. Using topic home/{room}")
       with open(f"detected_ruuvis.txt", "a") as fp:
           fp.write(f"{now.isoformat()} {room}\n")
