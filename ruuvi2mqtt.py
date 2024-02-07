@@ -36,7 +36,13 @@ def publish_discovery_config(room, found_data):
     "temperature": "°C",
     "humidity": "%",
     "pressure": "hPa",
-    "battery": "mV"
+    "battery": "mV",
+    "acceleration": "mG",
+    "acceleration_x": "mG",
+    "acceleration_y": "mG",
+    "acceleration_z": "mG",
+    "rssi": "dBm",
+    "movement_counter": "times"
   }
 
   for s in sendvals:
@@ -59,6 +65,7 @@ def publish_discovery_config(room, found_data):
     }
     topic = f"homeassistant/sensor/{room}_{s}/config"
     my_data=json.dumps(payload).replace("'", '"')
+    logging.info(f"{topic}: {my_data}")
     for b in brokers:
       clients[b].publish(topic, my_data)
 

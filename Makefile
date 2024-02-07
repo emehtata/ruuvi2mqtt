@@ -21,6 +21,9 @@ rmi: stop rm
 run_mount:
 	docker run -d --name $(NAME) --privileged --network=host --restart=unless-stopped -v $(PWD):/app $(TAG)
 
+run_console:
+	docker run --name $(NAME) --privileged --network=host --restart=unless-stopped -v $(PWD):/app $(TAG)
+
 run_bash:
 	docker run --rm -it --entrypoint bash $(TAG)
 
