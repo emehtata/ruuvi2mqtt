@@ -1,10 +1,11 @@
 MACH=$$(uname -m)
 IMAGE=ruuvi2mqtt
 NAME=$(IMAGE)
-TAG=localhost:5000/$(IMAGE)-$(MACH)
+DISTRO?=alpine
+TAG=localhost:5000/$(IMAGE)-$(MACH)-$(DISTRO)
 
 build:
-	docker build . -t $(TAG)
+	docker build -f Dockerfile-$(DISTRO) . -t $(TAG)
 
 run:
 	docker run -d --name $(NAME) --privileged --network=host --restart=unless-stopped $(TAG)
@@ -25,7 +26,7 @@ run_console:
 	docker run --name $(NAME) --privileged --network=host --restart=unless-stopped -v $(PWD):/app $(TAG)
 
 run_bash:
-	docker run --rm -it --entrypoint bash $(TAG)
+	docker run --rm -it --privileged -v $(PWD):/app --entrypoint bash $(TAG)
 
 logs:
 	docker logs $(NAME)

@@ -33,27 +33,26 @@ def publish_discovery_config(room, found_data):
 
   jdata = found_data[1]
   sendvals = {
-    "temperature": "°C",
-    "humidity": "%",
-    "pressure": "hPa",
-    "battery": "mV",
-    "acceleration": "mG",
-    "acceleration_x": "mG",
-    "acceleration_y": "mG",
-    "acceleration_z": "mG",
-    "rssi": "dBm",
-    "movement_counter": "times"
+    "temperature": { "class": "temperature", "unit": "°C" },
+    "humidity": { "class": "humidity", "unit": "%" },
+    "pressure": { "class": "pressure", "unit": "hPa" },
+    "battery": { "class": "voltage", "unit": "mV" },
+    "acceleration": { "class": None, "unit": "mG" },
+    "acceleration_x": { "class": None, "unit": "mG" },
+    "acceleration_y": { "class": None, "unit": "mG" },
+    "acceleration_z": { "class": None, "unit": "mG" },
+    "rssi": { "class": None, "unit": "dBm" },
+    "movement_counter": { "class": None, "unit": "times" }
   }
 
   for s in sendvals:
     payload = {
-      "device_class":f"{s}",
       "state_topic":f"home/{room}",
-      "unit_of_measurement":f"{sendvals[s]}",
+      "unit_of_measurement":f"{sendvals[s]['unit']}",
       "value_template": "{{ value_json."+s+" }}",
       "unique_id": f"ruuvi{jdata['mac']}{s}",
       "object_id": f"{room}_{s}",
-      "friendly_name": f"{room} {s}",
+      "name": f"{room} {s}",
       "device":{
         "identifiers":[
           f"{room}"
@@ -63,6 +62,8 @@ def publish_discovery_config(room, found_data):
         "model": "Ruuvitag"
       }
     }
+    if sendvals[s]['class'] != None:
+      payload.update( { "device_class": f"{sendvals[s]['class']}" } )
     topic = f"homeassistant/sensor/{room}_{s}/config"
     my_data=json.dumps(payload).replace("'", '"')
     logging.info(f"{topic}: {my_data}")
