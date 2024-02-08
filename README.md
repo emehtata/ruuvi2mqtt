@@ -14,7 +14,7 @@ This python script reads RuuviTag sensors and sends specified data to MQTT broke
 ## Home Assistant discovery
 When a Tag is detected for the first time, program sends configuration message to broker and Home Assistant shall create the wanted sensors for its use.
 
-To initialize the sensors again, remove and setup MQTT broker in Home Assistant and restart Ruuvi2MQTT.
+To initialize the sensors again, remove and setup MQTT broker in Home Assistant or restart Home Assistant. Discovery config resets when MQTT integration client connects broker again.
 
 ## Usage
 
@@ -40,10 +40,10 @@ Note: if you don't add any *ruuvis* key-values, all your RuuviTags will be named
 `make rm`
 - Remove container
 
-If you want to use Debian slim image instead of Alpine, use `make DISTRO=debian <rule>` e.g. `make DISTRO=debian build`
+If you want to use Debian slim image instead of Alpine, use `make DISTRO=debian` e.g. `make DISTRO=debian build`
 
 See **Makefile** for other rules.
 
 ## TODO
 - Script version info
-
+- Support many brokers on one host
