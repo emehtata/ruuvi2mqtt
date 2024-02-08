@@ -57,7 +57,7 @@ def publish_discovery_config(room, found_data):
       "value_template": "{{ value_json."+s+" }}",
       "unique_id": f"ruuvi{jdata['mac']}{s}",
       "object_id": f"{room}_{s}",
-      "name": f"{room} {s}",
+      "name": f"{s}",
       "device":{
         "identifiers":[
           f"{room}"
