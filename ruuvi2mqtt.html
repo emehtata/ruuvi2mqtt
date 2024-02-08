@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module ruuvi2mqtt</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>ruuvi2mqtt</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/eskulilocal/work/ruuvi2mqtt/ruuvi2mqtt.py">/home/eskulilocal/work/ruuvi2mqtt/ruuvi2mqtt.py</a></font></td></tr></table>
+    <p><tt>ruuvi2mqtt<br>
+&nbsp;<br>
+RuuviTag&nbsp;to&nbsp;MQTT&nbsp;gateway.&nbsp;For&nbsp;people&nbsp;who&nbsp;do&nbsp;not&nbsp;want&nbsp;to&nbsp;use&nbsp;Home&nbsp;Assistant&nbsp;Ruuvi&nbsp;integration&nbsp;but&nbsp;read&nbsp;the&nbsp;sensors&nbsp;data&nbsp;straight&nbsp;from&nbsp;MQTT&nbsp;broker.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="datetime.html">datetime</a><br>
+<a href="json.html">json</a><br>
+</td><td width="25%" valign=top><a href="logging.html">logging</a><br>
+<a href="paho.mqtt.client.html">paho.mqtt.client</a><br>
+</td><td width="25%" valign=top><a href="platform.html">platform</a><br>
+<a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top><a href="time.html">time</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-connect_brokers"><strong>connect_brokers</strong></a>(brokers)</dt><dd><tt>Connect&nbsp;to&nbsp;MQTT&nbsp;brokers.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;brokers&nbsp;(dict):&nbsp;Dictionary&nbsp;containing&nbsp;broker&nbsp;configurations.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dict:&nbsp;Dictionary&nbsp;containing&nbsp;connected&nbsp;MQTT&nbsp;clients.</tt></dd></dl>
+ <dl><dt><a name="-handle_data"><strong>handle_data</strong></a>(found_data)</dt><dd><tt>Handle&nbsp;Ruuvi&nbsp;tag&nbsp;sensor&nbsp;data.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;found_data&nbsp;(tuple):&nbsp;Tuple&nbsp;containing&nbsp;room&nbsp;identifier&nbsp;and&nbsp;sensor&nbsp;data.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None</tt></dd></dl>
+ <dl><dt><a name="-on_connect"><strong>on_connect</strong></a>(client, userdata, flags, rc)</dt><dd><tt>MQTT&nbsp;on_connect&nbsp;callback&nbsp;function.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;client&nbsp;(mqtt.Client):&nbsp;The&nbsp;MQTT&nbsp;client.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;userdata:&nbsp;The&nbsp;user&nbsp;data.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;flags:&nbsp;Connection&nbsp;flags.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;rc&nbsp;(int):&nbsp;Return&nbsp;code.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None</tt></dd></dl>
+ <dl><dt><a name="-on_disconnect"><strong>on_disconnect</strong></a>(client, userdata, rc)</dt><dd><tt>MQTT&nbsp;on_disconnect&nbsp;callback&nbsp;function.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;client&nbsp;(mqtt.Client):&nbsp;The&nbsp;MQTT&nbsp;client.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;userdata:&nbsp;The&nbsp;user&nbsp;data.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;rc&nbsp;(int):&nbsp;Return&nbsp;code.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None</tt></dd></dl>
+ <dl><dt><a name="-on_message"><strong>on_message</strong></a>(client, userdata, msg)</dt><dd><tt>MQTT&nbsp;on_message&nbsp;callback&nbsp;function.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;client&nbsp;(mqtt.Client):&nbsp;The&nbsp;MQTT&nbsp;client.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;userdata:&nbsp;The&nbsp;user&nbsp;data.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;msg&nbsp;(mqtt.MQTTMessage):&nbsp;The&nbsp;received&nbsp;MQTT&nbsp;message.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None</tt></dd></dl>
+ <dl><dt><a name="-on_publish"><strong>on_publish</strong></a>(client, userdata, rc)</dt><dd><tt>MQTT&nbsp;on_publish&nbsp;callback&nbsp;function.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;client&nbsp;(mqtt.Client):&nbsp;The&nbsp;MQTT&nbsp;client.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;userdata:&nbsp;The&nbsp;user&nbsp;data.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;rc&nbsp;(int):&nbsp;Return&nbsp;code.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None</tt></dd></dl>
+ <dl><dt><a name="-publish_discovery_config"><strong>publish_discovery_config</strong></a>(room, found_data)</dt><dd><tt>Publish&nbsp;discovery&nbsp;configuration&nbsp;to&nbsp;Home&nbsp;Assistant.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;room&nbsp;(str):&nbsp;The&nbsp;room&nbsp;identifier.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;found_data&nbsp;(tuple):&nbsp;Tuple&nbsp;containing&nbsp;room&nbsp;identifier&nbsp;and&nbsp;sensor&nbsp;data.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None</tt></dd></dl>
+ <dl><dt><a name="-send_single"><strong>send_single</strong></a>(jdata, keyname, client)</dt><dd><tt>Send&nbsp;a&nbsp;single&nbsp;sensor&nbsp;value&nbsp;to&nbsp;the&nbsp;MQTT&nbsp;broker.<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;jdata&nbsp;(dict):&nbsp;The&nbsp;data&nbsp;dictionary&nbsp;containing&nbsp;sensor&nbsp;values.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;keyname&nbsp;(str):&nbsp;The&nbsp;key&nbsp;corresponding&nbsp;to&nbsp;the&nbsp;sensor&nbsp;value&nbsp;to&nbsp;be&nbsp;sent.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;client&nbsp;(mqtt.Client):&nbsp;The&nbsp;MQTT&nbsp;client.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;None</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>DISCOVERY_INTERVAL</strong> = 300<br>
+<strong>brokers</strong> = {'192.168.7.186': {'port': 1883}, 'localhost': {'port': 1883}}<br>
+<strong>clients</strong> = {}<br>
+<strong>found_ruuvis</strong> = []<br>
+<strong>last_discovery</strong> = datetime.datetime(2024, 2, 8, 11, 43, 14, 579739, tzinfo=datetime.timezone.utc)<br>
+<strong>myhostname</strong> = 'hoopo'<br>
+<strong>ruuvis</strong> = {'C5:7D:4C:65:9D:60': 'car-interior', 'D1:48:D2:7D:3D:02': 'downstairs-bedroom', 'D5:43:48:93:FE:F0': 'fridge', 'DD:17:F3:D7:86:CE': 'pool', 'E2:9D:53:95:0E:8B': 'upstairs-small-bedroom', 'E8:0D:4B:5D:BD:D8': 'ruuvi1', 'E8:28:93:CE:5A:E8': 'greenhouse', 'EA:D5:76:69:70:99': 'freezer', 'EC:67:46:36:EA:60': 'sauna', 'FE:87:0F:93:69:AA': 'biergarten'}<br>
+<strong>send_single_values</strong> = False</td></tr></table>
+</body></html>
