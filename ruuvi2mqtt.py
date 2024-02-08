@@ -125,6 +125,14 @@ def on_connect(client, userdata, flags, rc):
         logging.info(f"Connected OK Returned code {rc}")
     else:
         logging.error(f"Bad connection Returned code {rc}")
+    client.subscribe("homeassistant/status")
+
+def on_message(client, userdata, msg):
+    global found_ruuvis
+    payload=msg.payload.decode()
+    logging.info(f"Received message on topic {msg.topic}: {payload}")
+    if payload=="online":
+      found_ruuvis={}
 
 def on_disconnect(client, userdata, rc):
     if rc != 0:
@@ -140,6 +148,7 @@ def connect_brokers(brokers):
     clients[b].on_connect = on_connect
     clients[b].on_publish = on_publish
     clients[b].on_disconnect = on_disconnect
+    clients[b].on_message = on_message
     clients[b].connect_async(b, port=brokers[b]['port'])
     logging.info(f"Connection OK {clients[b]} {brokers[b]}")
     clients[b].loop_start()

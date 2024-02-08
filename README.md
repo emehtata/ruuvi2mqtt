@@ -45,6 +45,5 @@ If you want to use Debian slim image instead of Alpine, use `make DISTRO=debian 
 See **Makefile** for other rules.
 
 ## TODO
-- Send discover data periodically
 - Script version info
 
