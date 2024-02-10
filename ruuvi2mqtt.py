@@ -64,7 +64,7 @@ def publish_discovery_config(room, found_data):
         "acceleration_x": {"class": None, "unit": "mG"},
         "acceleration_y": {"class": None, "unit": "mG"},
         "acceleration_z": {"class": None, "unit": "mG"},
-        "rssi": {"class": None, "unit": "dBm"},
+        f"rssi_{myhostname}": {"class": None, "unit": "dBm"},
         "movement_counter": {"class": None, "unit": "times"}
     }
 
@@ -127,6 +127,7 @@ def handle_data(found_data):
     jdata.update({"client": myhostname})
     jdata.update({"ts": now.timestamp()})
     jdata.update({"ts_iso": now.isoformat()})
+    jdata.update({f"rssi_{myhostname}": jdata['rssi']})
     my_data = json.dumps(jdata).replace("'", '"')
     logging.debug(my_data)
     for b in brokers:
