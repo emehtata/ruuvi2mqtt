@@ -18,9 +18,6 @@ from ruuvitag_sensor.ruuvi import RuuviTagSensor
 from settings import brokers
 from settings import ruuvis
 
-last_discovery = datetime.datetime.now(tz=datetime.timezone.utc)
-DISCOVERY_INTERVAL = 300
-
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=logging.INFO,
@@ -105,16 +102,8 @@ def handle_data(found_data):
     Returns:
         None
     """
-    global last_discovery
     global found_ruuvis
     now = datetime.datetime.now(tz=datetime.timezone.utc)
-
-    if now.timestamp() - last_discovery.timestamp() > DISCOVERY_INTERVAL:
-        logging.info(f"DISCOVERY_INTERVAL ({DISCOVERY_INTERVAL}) s exceeded. Send new discovery.")
-        last_discovery = now
-        found_ruuvis = []
-    else:
-        logging.debug(f"{now.timestamp() - last_discovery.timestamp()} s from last discovery")
 
     logging.debug(found_data)
     try:
