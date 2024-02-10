@@ -13,7 +13,6 @@ import paho.mqtt.client as mqtt
 import json
 import sys
 import platform
-import time
 from ruuvitag_sensor.ruuvi import RuuviTagSensor
 from settings import brokers
 from settings import ruuvis
