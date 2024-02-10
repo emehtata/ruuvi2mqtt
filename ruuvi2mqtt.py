@@ -112,7 +112,7 @@ def handle_data(found_data):
     if now.timestamp() - last_discovery.timestamp() > DISCOVERY_INTERVAL:
         logging.info(f"DISCOVERY_INTERVAL ({DISCOVERY_INTERVAL}) s exceeded. Send new discovery.")
         last_discovery = now
-        found_ruuvis = {}
+        found_ruuvis = []
     else:
         logging.debug(f"{now.timestamp() - last_discovery.timestamp()} s from last discovery")
 
