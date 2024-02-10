@@ -170,7 +170,7 @@ def on_message(client, userdata, msg):
     payload = msg.payload.decode()
     logging.info(f"Received message on topic {msg.topic}: {payload}")
     if payload == "online":
-        found_ruuvis = {}
+        found_ruuvis = []
 
 def on_disconnect(client, userdata, rc):
     """MQTT on_disconnect callback function.
