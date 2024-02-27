@@ -2,13 +2,17 @@ MACH=$$(uname -m)
 IMAGE=ruuvi2mqtt
 NAME=$(IMAGE)
 DISTRO?=alpine
-TAG=localhost:5000/$(IMAGE)-$(MACH)-$(DISTRO)
+BRANCH=$$(git rev-parse --abbrev-ref HEAD)
+ifeq ($(BRANCH), master)
+BRANCH=latest
+endif
+TAG=localhost:5000/$(IMAGE)-$(MACH)-$(DISTRO):$(BRANCH)
 
 build:
 	docker build -f Dockerfile-$(DISTRO) . -t $(TAG)
 
 run:
-	docker run -d --name $(NAME) --privileged --network=host --restart=unless-stopped $(TAG)
+	docker run -d --name $(NAME) --privileged --network=host --restart=unless-stopped -v /etc/localtime:/etc/localtime:ro $(TAG)
 
 stop:
 	docker stop $(NAME)
