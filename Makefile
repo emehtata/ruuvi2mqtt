@@ -2,11 +2,15 @@ MACH=$$(uname -m)
 IMAGE=ruuvi2mqtt
 NAME=$(IMAGE)
 DISTRO?=alpine
-BRANCH=$$(git rev-parse --abbrev-ref HEAD)
-ifeq ($(BRANCH), master)
-BRANCH=latest
+GBRANCH=$(shell git rev-parse --abbrev-ref HEAD)
+TAG="localhost:5000/$(IMAGE)-$(MACH)-$(DISTRO):$(GBRANCH)"
+
+ifeq ($(GBRANCH),master)
+	GBRANCH=latest
 endif
-TAG=localhost:5000/$(IMAGE)-$(MACH)-$(DISTRO):$(BRANCH)
+
+version:
+	@echo "$(TAG)"
 
 build:
 	docker build -f Dockerfile-$(DISTRO) . -t $(TAG)
