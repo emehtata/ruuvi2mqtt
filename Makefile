@@ -3,7 +3,9 @@ IMAGE=ruuvi2mqtt
 NAME=$(IMAGE)
 DISTRO?=alpine
 GBRANCH=$(shell git rev-parse --abbrev-ref HEAD)
+GITTAG=$(shell git describe --tags)
 TAG="localhost:5000/$(IMAGE)-$(MACH)-$(DISTRO):$(GBRANCH)"
+RELTAG="localhost:5000/$(IMAGE)-$(MACH)-$(DISTRO):$(GITTAG)"
 
 ifeq ($(GBRANCH),master)
 	GBRANCH=latest
@@ -47,3 +49,5 @@ start:
 
 push:
 	docker push $(TAG)
+	docker tag $(TAG) $(RELTAG)
+	docker push $(RELTAG)
