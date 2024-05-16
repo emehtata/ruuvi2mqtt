@@ -116,7 +116,7 @@ def handle_data(found_data):
             room = f"Ruuvi-{room}"
             logging.warning(f"Not found {found_data[0]}. Using topic home/{room}")
             with open(f"detected_ruuvis.txt", "a") as fp:
-                fp.write(f"{now.isoformat()} {room}\n")
+                fp.write(f"{now.isoformat()} {room} {found_data}\n")
             publish_discovery_config(room, found_data)
             found_ruuvis.append(room)
     topic = "home/" + room
