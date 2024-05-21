@@ -46,7 +46,7 @@ restart:
 start:
 	docker start $(NAME)
 
-push:
+push: build
 	docker push $(TAG)
 	docker tag $(TAG) $(RELTAG)
 	docker push $(RELTAG)
