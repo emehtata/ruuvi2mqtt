@@ -136,7 +136,7 @@ def handle_data(found_data):
                 send_single(jdata, j, clients[b])
     logging.debug("-" * 40)
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc, properties=None):
     """MQTT on_connect callback function.
 
     Args:
@@ -155,7 +155,7 @@ def on_connect(client, userdata, flags, rc):
         logging.error(f"Bad connection Returned code {rc}")
     client.subscribe("homeassistant/status")
 
-def on_message(client, userdata, msg):
+def on_message(client, userdata, msg, properties=None):
     """MQTT on_message callback function.
 
     Args:
@@ -172,7 +172,7 @@ def on_message(client, userdata, msg):
     if payload == "online":
         found_ruuvis = []
 
-def on_disconnect(client, userdata, rc):
+def on_disconnect(client, userdata, rc, properties=None):
     """MQTT on_disconnect callback function.
 
     Args:
@@ -186,19 +186,6 @@ def on_disconnect(client, userdata, rc):
     if rc != 0:
         logging.error("Unexpected MQTT disconnection.")
 
-def on_publish(client, userdata, rc):
-    """MQTT on_publish callback function.
-
-    Args:
-        client (mqtt.Client): The MQTT client.
-        userdata: The user data.
-        rc (int): Return code.
-
-    Returns:
-        None
-    """
-    logging.debug("Data published")
-
 def connect_brokers(brokers):
     """Connect to MQTT brokers.
 
@@ -210,9 +197,9 @@ def connect_brokers(brokers):
     """
     for b in brokers:
         logging.info(f"Connecting Broker: {b} {brokers[b]}")
-        clients[b] = mqtt.Client(f"{myhostname}-ruuviclient")
+        # clients[b] = mqtt.Client(f"{myhostname}-ruuviclient")
+        clients[b] = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, f"{myhostname}-ruuviclient")
         clients[b].on_connect = on_connect
-        clients[b].on_publish = on_publish
         clients[b].on_disconnect = on_disconnect
         clients[b].on_message = on_message
         clients[b].connect_async(b, port=brokers[b]['port'])
