@@ -32,7 +32,7 @@ run_mount:
 	docker run -d --name $(NAME) --privileged --network=host --restart=unless-stopped -v $(PWD):/app $(TAG)
 
 run_console:
-	docker run --name $(NAME) --privileged --network=host --restart=unless-stopped -v $(PWD):/app $(TAG)
+	docker run --rm --name $(NAME) --privileged --network=host -v $(PWD):/app $(TAG)
 
 run_bash:
 	docker run --rm -it --privileged -v $(PWD):/app --entrypoint bash $(TAG)
