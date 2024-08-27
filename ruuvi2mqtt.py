@@ -111,9 +111,8 @@ def handle_data(found_data):
             publish_discovery_config(room, found_data)
             found_ruuvis.append(room)
     except Exception as e:
-        room = found_data[0].replace(':', '')
+        room = f"Ruuvi-{found_data[0].replace(':', '')}"
         if room not in found_ruuvis:
-            room = f"Ruuvi-{room}"
             logging.warning(f"Not found {found_data[0]}. Using topic home/{room}")
             with open(f"detected_ruuvis.txt", "a") as fp:
                 fp.write(f"{now.isoformat()} {room} {found_data}\n")
