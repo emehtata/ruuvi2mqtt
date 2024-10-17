@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ruuvi2mqtt
+  namespace: ruuvi2mqtt
+  labels:
+    app: ruuvi2mqtt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ruuvi2mqtt
+  template:
+    metadata:
+      labels:
+        app: ruuvi2mqtt
+    spec:
+      containers:
+      - name: ruuvi2mqtt
+        image: localhost:5000/ruuvi2mqtt-alpine:x86_64-latest
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - NET_ADMIN  # Allows modifying network interfaces
+              - NET_RAW    # Required to open raw sockets (for Bluetooth)
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: localtime
+          readOnly: true
+        - mountPath: /dev
+          name: dev  # Mount the host's /dev to access Bluetooth devices
+      hostNetwork: true  # Bluetooth often requires access to host networking
+      hostIPC: true  # Shares IPC with the host, useful for Bluetooth
+      hostPID: true  # Shares the process ID namespace with the host, useful for debugging
+      volumes:
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+          type: File
+      - name: dev
+        hostPath:
+          path: /dev  # Bluetooth devices are in /dev, e.g., /dev/rfkill
+          type: Directory
+

@@ -1,5 +1,6 @@
 MACH=$$(uname -m)
 IMAGE=ruuvi2mqtt
+APP=$$(basename $(PWD))
 NAME=$(IMAGE)
 DISTRO?=alpine
 GBRANCH=$(shell git rev-parse --abbrev-ref HEAD)
@@ -50,3 +51,11 @@ push: build
 	docker push $(TAG)
 	docker tag $(TAG) $(RELTAG)
 	docker push $(RELTAG)
+info:
+	echo $(APP)
+
+install:
+	helm upgrade --install $(APP) chart -n $(APP) --create-namespace
+
+uninstall:
+	helm uninstall $(APP) -n $(APP)

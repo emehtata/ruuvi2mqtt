@@ -1,0 +1,20 @@
+kubernetesClusterDomain: cluster.local
+ruuvi2Mqtt:
+  replicas: 1
+  ruuvi2Mqtt:
+    containerSecurityContext:
+      capabilities:
+        add:
+        - NET_ADMIN
+        - NET_RAW
+      privileged: true
+    image:
+      repository: localhost:5000/ruuvi2mqtt-alpine
+      tag: x86_64-latest
+    resources:
+      limits:
+        cpu: 500m
+        memory: 128Mi
+      requests:
+        cpu: 250m
+        memory: 64Mi

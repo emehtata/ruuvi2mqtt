@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chart.fullname" . }}-deployment
+  labels:
+    app: ruuvi2mqtt
+  {{- include "chart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.ruuvi2Mqtt.replicas }}
+  selector:
+    matchLabels:
+      app: ruuvi2mqtt
+    {{- include "chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: ruuvi2mqtt
+      {{- include "chart.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.ruuvi2Mqtt.ruuvi2Mqtt.image.repository }}:{{ .Values.ruuvi2Mqtt.ruuvi2Mqtt.image.tag
+          | default .Chart.AppVersion }}
+        name: ruuvi2mqtt
+        resources: {{- toYaml .Values.ruuvi2Mqtt.ruuvi2Mqtt.resources | nindent 10 }}
+        securityContext: {{- toYaml .Values.ruuvi2Mqtt.ruuvi2Mqtt.containerSecurityContext
+          | nindent 10 }}
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: localtime
+          readOnly: true
+        - mountPath: /dev
+          name: dev
+      hostIPC: true
+      hostNetwork: true
+      hostPID: true
+      volumes:
+      - hostPath:
+          path: /etc/localtime
+          type: File
+        name: localtime
+      - hostPath:
+          path: /dev
+          type: Directory
+        name: dev
