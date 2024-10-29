@@ -1,49 +1,59 @@
 # Ruuvi2MQTT
 
-## Intro
-RuuviTag to MQTT gateway. For people who do not want to use Home Assistant Ruuvi integration but read
-the sensors data straight from MQTT broker.
+## Introduction
+**Ruuvi2MQTT** is a gateway for sending RuuviTag sensor data to an MQTT broker. This application is designed for users who prefer not to use Home Assistant’s Ruuvi integration and want direct access to sensor data via MQTT.
 
 ## Pre-requisites
 
-- A computer with network connection and BLE capability. Tested with Raspberry Pi 2/3/4/5 and several x86 computers.
-- Linux distro with Docker installed
+- **Network-connected computer with BLE support**
+
+  - Tested with Raspberry Pi 2/3/4/5 and various x86 systems.
+- **Linux distribution with Docker installed**
+
+This Python script reads data from RuuviTag sensors and sends the specified information to one or more MQTT brokers as defined in settings.py (see settings.py.example for reference).
 
 This python script reads RuuviTag sensors and sends specified data to MQTT broker(s) defined in **settings.py** (see *settings.py.example* for example).
 
 ## Home Assistant discovery
-When a Tag is detected for the first time, program sends configuration message to broker and Home Assistant shall create the wanted sensors for its use.
+Upon detecting a new RuuviTag, the program automatically sends a configuration message to the broker, enabling Home Assistant to create sensors for easy integration.
 
-To initialize the sensors again, remove and setup MQTT broker in Home Assistant or restart Home Assistant. Discovery config resets when MQTT integration client connects broker again.
+To reinitialize sensors, either remove and re-add the MQTT broker in Home Assistant or restart Home Assistant. Discovery configuration resets whenever the MQTT client reconnects to the broker.
 
 ## Usage
 
-Copy settings.example.py to settings.py and edit *brokers* and *ruuvis* to match your environment.
+Copy ```settings.example.py``` to ```settings.py``` and edit the brokers and ruuvis entries to match your setup.
 
-Note: if you don't add any *ruuvis* key-values, all your RuuviTags will be named as Ruuvi-<mac> in MQTT data.
+**Note:** If no ```ruuvis``` key-values are specified, all RuuviTags will be named with the prefix "Ruuvi-" in MQTT data.
 
-`make build` 
-- Build Docker image
+Use the following make commands for managing the Docker container:
 
-`make run`
-- Run container
+- ```make build```
 
-`make run_mount`
-- Run container but mount current directory as /app in container. Helpful for development.
+  Build the Docker image.
 
-`make stop`
-- Stop running container
+- ```make run```
 
-`make start`
-- Start stopped container
+  Run the container.
 
-`make rm`
-- Remove container
+- ```make run_mount```
 
-If you want to use Debian slim image instead of Alpine, use `make DISTRO=debian` e.g. `make DISTRO=debian build`
+  Run the container with the current directory mounted as /app inside the container, useful for development.
 
-See **Makefile** for other rules.
+- ```make stop```
+
+  Stop the running container.
+
+- ```make start```
+
+  Start a previously stopped container.
+
+- ```make rm```
+  Remove the container.
+
+If you prefer to use a Debian Slim image instead of Alpine, specify it with ```DISTRO=debian```, e.g., ```make DISTRO=debian build```.
+
+Refer to the Makefile for additional rules and options.
 
 ## TODO
-- Script version info
-- Support many brokers on one host
+- Add version information to the script.
+- Enable support for multiple brokers on a single host.
