@@ -10,7 +10,7 @@ ruuvi2Mqtt:
       privileged: true
     image:
       repository: localhost:5000/ruuvi2mqtt-alpine
-      tag: x86_64-latest
+      tag: x86_64-main
     resources:
       limits:
         cpu: 500m
