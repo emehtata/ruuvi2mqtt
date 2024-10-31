@@ -23,6 +23,7 @@ spec:
           value: {{ quote .Values.kubernetesClusterDomain }}
         image: {{ .Values.ruuvi2Mqtt.ruuvi2Mqtt.image.repository }}:{{ .Values.ruuvi2Mqtt.ruuvi2Mqtt.image.tag
           | default .Chart.AppVersion }}
+        imagePullPolicy: Always
         name: ruuvi2mqtt
         resources: {{- toYaml .Values.ruuvi2Mqtt.ruuvi2Mqtt.resources | nindent 10 }}
         securityContext: {{- toYaml .Values.ruuvi2Mqtt.ruuvi2Mqtt.containerSecurityContext
