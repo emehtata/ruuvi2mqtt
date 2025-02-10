@@ -28,7 +28,12 @@ build:
 	docker build -f docker/Dockerfile-$(DISTRO) . -t $(TAG)
 
 run: build
-	docker run -d --name $(NAME) --privileged --network=host --restart=unless-stopped -v /etc/localtime:/etc/localtime:ro $(TAG)
+	docker run -d --name $(NAME) --privileged\
+	 --network=host --restart=unless-stopped\
+	 --cap-add NET_ADMIN \
+	 --cap-add NET_RAW \
+	 -v /run/dbus:/run/dbus:ro \
+	 -v /etc/localtime:/etc/localtime:ro $(TAG)
 
 stop:
 	docker stop $(NAME)

@@ -34,6 +34,9 @@ spec:
           readOnly: true
         - mountPath: /dev
           name: dev
+        - mountPath: /run/dbus
+          name: dbus
+          readOnly: true
       hostIPC: true
       hostNetwork: true
       hostPID: true
@@ -46,3 +49,7 @@ spec:
           path: /dev
           type: Directory
         name: dev
+      - hostPath:
+          path: /run/dbus
+          type: Directory
+        name: dbus

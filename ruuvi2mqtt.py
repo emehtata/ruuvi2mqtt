@@ -7,6 +7,7 @@ ruuvi2mqtt
 RuuviTag to MQTT gateway. For people who do not want to use Home Assistant Ruuvi integration but read the sensors data straight from MQTT broker.
 """
 
+import asyncio
 import logging
 import datetime
 import paho.mqtt.client as mqtt
@@ -206,12 +207,19 @@ def connect_brokers(brokers):
         clients[b].loop_start()
     return clients
 
+async def main():
+    async for found_data in RuuviTagSensor.get_data_async():
+        logging.debug(f"MAC: {found_data[0]}")
+        logging.debug(f"Data: {found_data[1]}")
+        handle_data(found_data)
+
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == '-s':
         send_single_values = True
     clients = connect_brokers(brokers)
     try:
-        RuuviTagSensor.get_data(handle_data)
+        # RuuviTagSensor.get_data(handle_data)
+        asyncio.run(main())
     except Exception as e:
-        logging.warning(f"get_data not working, trying get_datas: {e}")
+        logging.warning(f"async not working, trying get_datas: {e}")
         RuuviTagSensor.get_datas(handle_data)
