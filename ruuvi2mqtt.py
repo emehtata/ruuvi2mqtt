@@ -202,7 +202,7 @@ def connect_brokers(brokers):
         clients[b].on_connect = on_connect
         clients[b].on_disconnect = on_disconnect
         clients[b].on_message = on_message
-        clients[b].connect_async(b, port=brokers[b]['port'])
+        clients[b].connect_async(brokers[b]['host'], brokers[b]['port'], 60)
         logging.info(f"Connection OK {clients[b]} {brokers[b]}")
         clients[b].loop_start()
     return clients
