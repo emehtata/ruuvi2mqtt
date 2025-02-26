@@ -4,19 +4,20 @@
 """
 ruuvi2mqtt
 
-RuuviTag to MQTT gateway. For people who do not want to use Home Assistant Ruuvi integration but read the sensors data straight from MQTT broker.
+RuuviTag to MQTT gateway. For people who do not want to use Home Assistant
+Ruuvi integration but read the sensors data straight from MQTT broker.
 """
 
 import asyncio
 import logging
 import datetime
-import paho.mqtt.client as mqtt
 import json
 import sys
 import platform
+import paho.mqtt.client as mqtt
 from ruuvitag_sensor.ruuvi import RuuviTagSensor
-from settings import brokers
-from settings import ruuvis
+from settings import my_brokers
+from settings import my_ruuvis
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
@@ -27,7 +28,7 @@ logging.basicConfig(
 myhostname = platform.node()
 found_ruuvis = []
 clients = {}
-send_single_values = False
+SEND_SINGLE_VALUES = False
 
 def send_single(jdata, keyname, client):
     """Send a single sensor value to the MQTT broker.
@@ -41,7 +42,7 @@ def send_single(jdata, keyname, client):
         None
     """
     topic = f"{jdata['room']}/{keyname}"
-    logging.info(f"{topic}: {jdata[keyname]}")
+    logging.info("%s: %s", topic, jdata[keyname])
     client.publish(topic, jdata[keyname])
 
 def publish_discovery_config(room, found_data):
@@ -89,8 +90,8 @@ def publish_discovery_config(room, found_data):
             payload.update({"device_class": f"{sendvals[s]['class']}"})
         topic = f"homeassistant/sensor/{room}_{s}/config"
         my_data = json.dumps(payload).replace("'", '"')
-        logging.info(f"{topic}: {my_data}")
-        for b in brokers:
+        logging.info("%s: %s", topic, my_data)
+        for b in my_brokers:
             clients[b].publish(topic, my_data)
 
 def handle_data(found_data):
@@ -107,15 +108,16 @@ def handle_data(found_data):
 
     logging.debug(found_data)
     try:
-        room = ruuvis[found_data[0]]
+        room = my_ruuvis[found_data[0]]
         if room not in found_ruuvis:
             publish_discovery_config(room, found_data)
             found_ruuvis.append(room)
     except Exception as e:
         room = f"Ruuvi-{found_data[0].replace(':', '')}"
         if room not in found_ruuvis:
-            logging.warning(f"Not found {found_data[0]}. Using topic home/{room}")
-            with open(f"detected_ruuvis.txt", "a") as fp:
+            logging.debug(e)
+            logging.warning("Not found %s. Using topic home/%s", found_data[0], room)
+            with open("detected_ruuvis.txt", "a", encoding="utf-8") as fp:
                 fp.write(f"{now.isoformat()} {room} {found_data}\n")
             publish_discovery_config(room, found_data)
             found_ruuvis.append(room)
@@ -129,9 +131,9 @@ def handle_data(found_data):
     jdata.update({f"rssi_{myhostname}": jdata['rssi']})
     my_data = json.dumps(jdata).replace("'", '"')
     logging.debug(my_data)
-    for b in brokers:
+    for b in my_brokers:
         clients[b].publish(topic, my_data)
-        if send_single_values:
+        if SEND_SINGLE_VALUES:
             for j in jdata:
                 send_single(jdata, j, clients[b])
     logging.debug("-" * 40)
@@ -148,11 +150,12 @@ def on_connect(client, userdata, flags, rc, properties=None):
     Returns:
         None
     """
-    logging.info(f"Connected, returned code {rc}")
+    logging.info("Connected, returned code %s", rc)
+    logging.debug("%s %x %x", userdata, flags, properties)
     if rc == 0:
-        logging.info(f"Connected OK Returned code {rc}")
+        logging.info("Connected OK Returned code %s", rc)
     else:
-        logging.error(f"Bad connection Returned code {rc}")
+        logging.error("Bad connection Returned code %s", rc)
     client.subscribe("homeassistant/status")
 
 def on_message(client, userdata, msg, properties=None):
@@ -168,7 +171,8 @@ def on_message(client, userdata, msg, properties=None):
     """
     global found_ruuvis
     payload = msg.payload.decode()
-    logging.info(f"Received message on topic {msg.topic}: {payload}")
+    logging.info("Received message on topic %s: %s", msg.topic, payload)
+    logging.debug("%s %s %s", client, userdata, properties)
     if payload == "online":
         found_ruuvis = []
 
@@ -185,6 +189,7 @@ def on_disconnect(client, userdata, rc, properties=None):
     """
     if rc != 0:
         logging.error("Unexpected MQTT disconnection.")
+    logging.debug("%s %s %s", client, userdata, properties)
 
 def connect_brokers(brokers):
     """Connect to MQTT brokers.
@@ -196,30 +201,30 @@ def connect_brokers(brokers):
         dict: Dictionary containing connected MQTT clients.
     """
     for b in brokers:
-        logging.info(f"Connecting Broker: {b} {brokers[b]}")
+        logging.info("Connecting Broker: %s %s", b, brokers[b])
         # clients[b] = mqtt.Client(f"{myhostname}-ruuviclient")
         clients[b] = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, f"{myhostname}-ruuviclient")
         clients[b].on_connect = on_connect
         clients[b].on_disconnect = on_disconnect
         clients[b].on_message = on_message
         clients[b].connect_async(brokers[b]['host'], brokers[b]['port'], 60)
-        logging.info(f"Connection OK {clients[b]} {brokers[b]}")
+        logging.info("Connection OK %s %s", clients[b], brokers[b])
         clients[b].loop_start()
     return clients
 
 async def main():
     async for found_data in RuuviTagSensor.get_data_async():
-        logging.debug(f"MAC: {found_data[0]}")
-        logging.debug(f"Data: {found_data[1]}")
+        logging.debug("MAC: %s", found_data[0])
+        logging.debug("Data: %s", found_data[1])
         handle_data(found_data)
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == '-s':
-        send_single_values = True
-    clients = connect_brokers(brokers)
+        SEND_SINGLE_VALUES = True
+    clients = connect_brokers(my_brokers)
     try:
         # RuuviTagSensor.get_data(handle_data)
         asyncio.run(main())
     except Exception as e:
-        logging.warning(f"async not working, trying get_datas: {e}")
+        logging.warning("async not working, trying get_datas: %s", e)
         RuuviTagSensor.get_datas(handle_data)

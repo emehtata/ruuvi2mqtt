@@ -1,9 +1,9 @@
-brokers = {
+my_brokers = {
   "local": { "host": "192.168.7.186", "port": 1883 },
   "remote": { "host": "192.168.7.129", "port": 1883 }
 }
 
-ruuvis = {
+my_ruuvis = {
   "DD:17:F3:D7:86:CE": "pool",
   "EA:D5:76:69:70:99": "broken-tag",
   "EC:67:46:36:EA:60": "sauna",

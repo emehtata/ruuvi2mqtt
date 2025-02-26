@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-[ -f /etc/apt/apt.conf.d/99force-ipv4 ] || sudo echo "Acquire::ForceIPv4 "true";" > /etc/apt/apt.conf.d/99force-ipv4
+# [ -f /etc/apt/apt.conf.d/99force-ipv4 ] || sudo echo "Acquire::ForceIPv4 "true";" > /etc/apt/apt.conf.d/99force-ipv4
 
 sudo apt update
 sudo apt upgrade
