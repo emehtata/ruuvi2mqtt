@@ -53,7 +53,3 @@ Use the following make commands for managing the Docker container:
 If you prefer to use a Debian Slim image instead of Alpine, specify it with ```DISTRO=debian```, e.g., ```make DISTRO=debian build```.
 
 Refer to the Makefile for additional rules and options.
-
-## TODO
-- Add version information to the script.
-- Enable support for multiple brokers on a single host.
