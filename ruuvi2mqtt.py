@@ -172,7 +172,7 @@ def on_message(client, userdata, msg, properties=None):
     global found_ruuvis
     payload = msg.payload.decode()
     logging.info("Received message on topic %s: %s", msg.topic, payload)
-    logging.debug("%s %s %s %s", client, flags, userdata, properties)
+    logging.debug("%s %s %s", client, userdata, properties)
     if payload == "online":
         found_ruuvis = []
 
@@ -189,7 +189,7 @@ def on_disconnect(client, userdata, flags, rc, properties=None):
     """
     if rc != 0:
         logging.error("Unexpected MQTT disconnection.")
-    logging.debug("%s %s %s", client, userdata, properties)
+    logging.debug("%s %s %s %s", client, flags, userdata, properties)
 
 def connect_brokers(brokers):
     """Connect to MQTT brokers.
