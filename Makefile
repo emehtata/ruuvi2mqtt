@@ -11,7 +11,7 @@ REPOHOST ?= localhost:5000
 TAG := "$(REPOHOST)/$(IMAGE)-$(DISTRO):$(MACH)-$(GBRANCH)"
 RELTAG := "$(REPOHOST)/$(IMAGE)-$(DISTRO):$(MACH)-$(GITTAG)"
 
-.PHONY: version setup build run stop rm rmi run_mount run_console run_bash logs restart start push install uninstall venv
+.PHONY: version setup build run stop rm rmi run_mount run_console run_bash logs restart start push install uninstall venv test
 
 # Print version information
 version:
@@ -25,9 +25,9 @@ setup:
 
 # Docker build, run, and management
 build:
-	docker build -f docker/Dockerfile-$(DISTRO) . -t $(TAG)
+	docker build -f docker/Dockerfile-$(DISTRO) . -t $(TAG) --no-cache
 
-run: build
+run:
 	docker run -d --name $(NAME) --privileged\
 	 --network=host --restart=unless-stopped\
 	 --cap-add NET_ADMIN \
@@ -45,13 +45,13 @@ rmi: stop rm
 	docker rmi $(TAG)
 
 # Development run modes
-run_mount: build
+run_mount:
 	docker run -d --name $(NAME) --privileged --network=host --restart=unless-stopped -v $(PWD):/app $(TAG)
 
-run_console: build
+run_console:
 	docker run --rm --name $(NAME) --privileged --network=host -v $(PWD):/app $(TAG)
 
-run_bash: build
+run_bash:
 	docker run --rm -it --privileged -v $(PWD):/app --entrypoint bash $(TAG)
 
 logs:
@@ -80,3 +80,14 @@ uninstall:
 venv:
 	python3 -m venv .venv
 	@echo "Virtual environment created in .venv"
+
+# Run unit tests
+test:
+	@if [ ! -d ".venv" ]; then \
+		echo "Virtual environment not found. Creating it..."; \
+		make venv; \
+	fi
+	@echo "Installing dependencies..."
+	@bash -c "source .venv/bin/activate && pip install -q -r requirements.txt"
+	@echo "Running unit tests..."
+	@bash -c "source .venv/bin/activate && python -m pytest test_ruuvi2mqtt.py --cov=ruuvi2mqtt --cov-report=term-missing -v"
