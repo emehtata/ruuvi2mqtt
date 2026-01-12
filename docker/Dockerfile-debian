@@ -15,9 +15,21 @@ COPY requirements.txt .
 # Install the Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the Python script and settings file to the container
+# Copy the main application
 COPY ruuvi2mqtt.py .
-COPY settings.py .
+COPY settings.py.example .
+# Copy settings.py if it exists (will be ignored if not present)
+COPY settings.py* ./
 
-# Run the Python script as the default command
-CMD ["python3", "ruuvi2mqtt.py"]
+# Copy the web application
+COPY webapp/ /app/webapp/
+
+# Copy and set permissions for entrypoint script
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Expose web interface port
+EXPOSE 5883
+
+# Run both applications via entrypoint
+CMD ["/entrypoint.sh"]

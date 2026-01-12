@@ -11,7 +11,7 @@ REPOHOST ?= localhost:5000
 TAG := "$(REPOHOST)/$(IMAGE)-$(DISTRO):$(MACH)-$(GBRANCH)"
 RELTAG := "$(REPOHOST)/$(IMAGE)-$(DISTRO):$(MACH)-$(GITTAG)"
 
-.PHONY: version setup build run stop rm rmi run_mount run_console run_bash logs restart start push install uninstall venv test
+.PHONY: version setup build run stop rm rmi run_mount run_console run_bash logs restart start push install uninstall venv test volume-inspect volume-backup volume-restore volume-rm
 
 # Print version information
 version:
@@ -28,12 +28,16 @@ build:
 	docker build -f docker/Dockerfile-$(DISTRO) . -t $(TAG) --no-cache
 
 run:
+	@docker volume create $(NAME)-data 2>/dev/null || true
 	docker run -d --name $(NAME) --privileged\
 	 --network=host --restart=unless-stopped\
 	 --cap-add NET_ADMIN \
 	 --cap-add NET_RAW \
 	 -v /run/dbus:/run/dbus:ro \
-	 -v /etc/localtime:/etc/localtime:ro $(TAG)
+	 -v /etc/localtime:/etc/localtime:ro \
+	 -v $(NAME)-data:/data \
+	 -e WEBAPP_PORT=5883 \
+	 $(TAG)
 
 stop:
 	docker stop $(NAME)
@@ -80,6 +84,26 @@ uninstall:
 venv:
 	python3 -m venv .venv
 	@echo "Virtual environment created in .venv"
+
+# Volume management
+volume-inspect:
+	@echo "Inspecting volume $(NAME)-data:"
+	@docker volume inspect $(NAME)-data 2>/dev/null || echo "Volume does not exist"
+
+volume-backup:
+	@echo "Backing up settings from volume..."
+	@docker run --rm -v $(NAME)-data:/data -v $(PWD):/backup alpine cp /data/settings.py /backup/settings.py.backup
+	@echo "Backup saved to settings.py.backup"
+
+volume-restore:
+	@if [ ! -f settings.py.backup ]; then echo "No backup file found"; exit 1; fi
+	@echo "Restoring settings to volume..."
+	@docker run --rm -v $(NAME)-data:/data -v $(PWD):/backup alpine cp /backup/settings.py.backup /data/settings.py
+	@echo "Settings restored from backup"
+
+volume-rm:
+	@echo "Removing volume $(NAME)-data..."
+	@docker volume rm $(NAME)-data
 
 # Run unit tests
 test:

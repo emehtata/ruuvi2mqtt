@@ -34,19 +34,43 @@ This ensures that sensors remain properly configured even after Home Assistant u
 
 ## Configuration
 
-1. Copy `settings.example.py` to `settings.py`
-2. Edit the `my_brokers` and `my_ruuvis` entries to match your setup
+Configuration is managed through a `settings.py` file that is automatically created from `settings.py.example` on first run.
 
-**Note:** If no `ruuvis` key-values are specified, all RuuviTags will be automatically named with the prefix "Ruuvi-" followed by their MAC address in MQTT data.
+**Docker Volume Storage:**
+- Settings are stored in a Docker named volume (`ruuvi2mqtt-data`)
+- Persists across container restarts, removals, and upgrades
+- Edit settings via the web UI at `http://<host>:5883`
+- Or backup/restore settings using make commands (see below)
+
+**Manual Configuration:**
+If you prefer to edit settings manually:
+1. Use `make volume-backup` to export current settings to `settings.py.backup`
+2. Edit `settings.py.backup` with your `my_brokers` and `my_ruuvis` entries
+3. Use `make volume-restore` to import the changes
+4. Restart the container with `make restart`
+
+**Note:** If no `ruuvis` key-values are specified, all RuuviTags will be automatically named with the prefix "Ruuvi-" followed by their MAC address.
 
 ## Usage
+
+### Web Interface
+
+The Docker container includes a web-based configuration interface accessible at `http://<host-ip>:5883`
+
+**Features:**
+- Add/remove MQTT brokers
+- Configure RuuviTag MAC to location name mappings
+- Real-time configuration updates
+- No need to restart the container for configuration changes
+
+The web interface runs alongside the main application and shares the same `settings.py` file.
 
 ### Docker Commands
 
 Use the following make commands for managing the Docker container:
 
 - `make build` - Build the Docker image
-- `make run` - Run the container
+- `make run` - Run the container (auto-creates volume and settings)
 - `make run_mount` - Run the container with the current directory mounted as /app (useful for development)
 - `make stop` - Stop the running container
 - `make start` - Start a previously stopped container
@@ -54,6 +78,17 @@ Use the following make commands for managing the Docker container:
 - `make rm` - Remove the container
 - `make logs` - View container logs
 - `make push` - Build and push the image to a registry
+
+### Volume Management
+
+Manage the persistent settings volume:
+
+- `make volume-inspect` - Show volume information
+- `make volume-backup` - Export settings to `settings.py.backup`
+- `make volume-restore` - Import settings from `settings.py.backup`
+- `make volume-rm` - Delete the volume (WARNING: removes all settings)
+
+**Note:** `make run` automatically creates the volume and initializes settings from example on first run.
 
 **Image variants:**
 If you prefer to use a Debian Slim image instead of Alpine, specify it with `DISTRO=debian`, e.g., `make DISTRO=debian build`.

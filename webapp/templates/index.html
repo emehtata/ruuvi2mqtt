@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruuvi2MQTT Configuration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏷️ Ruuvi2MQTT Configuration</h1>
+            <p class="subtitle">Configure MQTT brokers and RuuviTag sensor mappings</p>
+        </header>
+
+        <main>
+            <!-- MQTT Brokers Section -->
+            <section class="config-section">
+                <h2>MQTT Brokers</h2>
+                <div id="brokers-list" class="items-list">
+                    {% if brokers %}
+                        {% for name, config in brokers.items() %}
+                        <div class="item" data-name="{{ name }}">
+                            <div class="item-info">
+                                <strong>{{ name }}</strong>
+                                <span class="item-details">{{ config.host }}:{{ config.port }}</span>
+                            </div>
+                            <button class="btn-delete" onclick="deleteBroker('{{ name }}')">Delete</button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="empty-message">No brokers configured</p>
+                    {% endif %}
+                </div>
+
+                <div class="add-form">
+                    <h3>Add MQTT Broker</h3>
+                    <form id="add-broker-form">
+                        <div class="form-group">
+                            <label for="broker-name">Name:</label>
+                            <input type="text" id="broker-name" name="name" required placeholder="e.g., local">
+                        </div>
+                        <div class="form-group">
+                            <label for="broker-host">Host:</label>
+                            <input type="text" id="broker-host" name="host" required placeholder="e.g., 192.168.1.100">
+                        </div>
+                        <div class="form-group">
+                            <label for="broker-port">Port:</label>
+                            <input type="number" id="broker-port" name="port" value="1883" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Add Broker</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- RuuviTags Section -->
+            <section class="config-section">
+                <h2>RuuviTag Sensors</h2>
+                <div id="ruuvis-list" class="items-list">
+                    {% if ruuvis %}
+                        {% for mac, name in ruuvis.items() %}
+                        <div class="item" data-mac="{{ mac }}">
+                            <div class="item-info">
+                                <strong>{{ name }}</strong>
+                                <span class="item-details">{{ mac }}</span>
+                            </div>
+                            <button class="btn-delete" onclick="deleteRuuvi('{{ mac }}')">Delete</button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="empty-message">No RuuviTags configured</p>
+                    {% endif %}
+                </div>
+
+                <div class="add-form">
+                    <h3>Add RuuviTag</h3>
+                    <form id="add-ruuvi-form">
+                        <div class="form-group">
+                            <label for="ruuvi-mac">MAC Address:</label>
+                            <input type="text" id="ruuvi-mac" name="mac" required
+                                   placeholder="e.g., AA:BB:CC:DD:EE:FF"
+                                   pattern="[A-Fa-f0-9:]{17}">
+                        </div>
+                        <div class="form-group">
+                            <label for="ruuvi-name">Location/Name:</label>
+                            <input type="text" id="ruuvi-name" name="name" required
+                                   placeholder="e.g., living-room">
+                        </div>
+                        <button type="submit" class="btn-primary">Add RuuviTag</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Ruuvi2MQTT Web Configuration Interface</p>
+        </footer>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
