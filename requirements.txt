@@ -3,3 +3,4 @@ paho_mqtt>=2.0
 pytest>=7.0
 pytest-cov>=4.0
 Flask>=2.3.0
+zeroconf>=0.131.0

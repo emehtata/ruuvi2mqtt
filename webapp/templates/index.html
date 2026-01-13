@@ -35,6 +35,8 @@
 
                 <div class="add-form">
                     <h3>Add MQTT Broker</h3>
+                    <button type="button" class="btn-scan" onclick="scanMQTTBrokers()">🔍 Scan Network</button>
+                    <div id="discovered-brokers" class="discovered-list"></div>
                     <form id="add-broker-form">
                         <div class="form-group">
                             <label for="broker-name">Name:</label>

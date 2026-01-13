@@ -169,6 +169,82 @@ main {
     background: #c82333;
 }
 
+.btn-scan {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.btn-scan:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.btn-scan:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.discovered-list {
+    margin-bottom: 20px;
+}
+
+.discovered-broker {
+    background: #e7f5ff;
+    border: 2px solid #1971c2;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.discovered-broker:hover {
+    background: #d0ebff;
+}
+
+.discovered-broker-info {
+    flex: 1;
+}
+
+.discovered-broker-info strong {
+    display: block;
+    color: #1971c2;
+}
+
+.discovered-broker-info span {
+    color: #495057;
+    font-size: 0.9em;
+}
+
+.discovered-broker-type {
+    background: #1971c2;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    margin-left: 10px;
+}
+
+.scanning-indicator {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
 .notification {
     position: fixed;
     top: 20px;

@@ -139,3 +139,72 @@ document.getElementById('ruuvi-mac').addEventListener('input', (e) => {
 
     e.target.value = formatted;
 });
+
+// Scan for MQTT brokers
+async function scanMQTTBrokers() {
+    const scanButton = document.querySelector('.btn-scan');
+    const discoveredContainer = document.getElementById('discovered-brokers');
+
+    // Disable button and show scanning indicator
+    scanButton.disabled = true;
+    scanButton.textContent = '🔍 Scanning...';
+    discoveredContainer.innerHTML = '<div class="scanning-indicator">Scanning network for MQTT brokers...</div>';
+
+    try {
+        const response = await fetch('/api/scan/mqtt?timeout=5');
+        const result = await response.json();
+
+        if (result.success && result.brokers.length > 0) {
+            showNotification(`Found ${result.brokers.length} broker(s)!`, 'success');
+            displayDiscoveredBrokers(result.brokers);
+        } else if (result.success && result.brokers.length === 0) {
+            showNotification('No brokers found on network', 'error');
+            discoveredContainer.innerHTML = '<p class="empty-message">No MQTT brokers discovered</p>';
+        } else {
+            showNotification(result.message || 'Scan failed', 'error');
+            discoveredContainer.innerHTML = '';
+        }
+    } catch (error) {
+        showNotification('Error scanning for brokers', 'error');
+        console.error('Error:', error);
+        discoveredContainer.innerHTML = '';
+    } finally {
+        scanButton.disabled = false;
+        scanButton.textContent = '🔍 Scan Network';
+    }
+}
+
+// Display discovered brokers
+function displayDiscoveredBrokers(brokers) {
+    const container = document.getElementById('discovered-brokers');
+    container.innerHTML = '';
+
+    brokers.forEach(broker => {
+        const brokerDiv = document.createElement('div');
+        brokerDiv.className = 'discovered-broker';
+        brokerDiv.onclick = () => selectDiscoveredBroker(broker);
+
+        brokerDiv.innerHTML = `
+            <div class="discovered-broker-info">
+                <strong>${broker.name}</strong>
+                <span>${broker.host}:${broker.port}</span>
+            </div>
+            <span class="discovered-broker-type">${broker.type === 'mdns' ? 'mDNS' : 'Scan'}</span>
+        `;
+
+        container.appendChild(brokerDiv);
+    });
+}
+
+// Select a discovered broker
+function selectDiscoveredBroker(broker) {
+    document.getElementById('broker-name').value = broker.name;
+    document.getElementById('broker-host').value = broker.host;
+    document.getElementById('broker-port').value = broker.port;
+
+    showNotification('Broker details filled in - click Add to save', 'success');
+
+    // Scroll to form
+    document.getElementById('add-broker-form').scrollIntoView({ behavior: 'smooth' });
+}
+

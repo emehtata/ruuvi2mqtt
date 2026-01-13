@@ -5,6 +5,9 @@ Web-based configuration interface for the Ruuvi2MQTT gateway.
 ## Features
 
 - **MQTT Broker Configuration**: Add, view, and delete MQTT broker connections
+- **Network Scanning**: Automatically discover MQTT brokers on your local network
+  - mDNS/Zeroconf discovery (detects brokers advertising via Bonjour/Avahi)
+  - Network port scanning for MQTT (port 1883)
 - **RuuviTag Management**: Configure MAC address to location name mappings
 - **Real-time Updates**: Changes are saved immediately to `settings.py`
 - **Responsive Design**: Works on desktop and mobile devices

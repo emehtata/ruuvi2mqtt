@@ -1,0 +1,34 @@
+[MASTER]
+# Use multiple processes to speed up Pylint.
+jobs=1
+
+[MESSAGES CONTROL]
+# Disable specific warnings that are acceptable for this project:
+# - import-error: External dependencies may not be installed in CI
+# - global-statement: Module-level state management is intentional
+disable=import-error,
+        global-statement
+
+[FORMAT]
+# Maximum number of characters on a single line.
+max-line-length=100
+
+[BASIC]
+# Good variable names which should always be accepted
+good-names=i,j,k,ex,Run,_,fd,fp,rc
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args=10
+
+# Maximum number of locals for function / method body
+max-locals=15
+
+# Maximum number of return / yield for function / method body
+max-returns=6
+
+# Maximum number of branch for function / method body
+max-branches=12
+
+# Maximum number of statements in function / method body
+max-statements=50

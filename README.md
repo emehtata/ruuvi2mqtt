@@ -58,6 +58,7 @@ If you prefer to edit settings manually:
 The Docker container includes a web-based configuration interface accessible at `http://<host-ip>:5883`
 
 **Features:**
+- Automatic MQTT broker discovery (mDNS and network scanning)
 - Add/remove MQTT brokers
 - Configure RuuviTag MAC to location name mappings
 - Real-time configuration updates

@@ -14,7 +14,8 @@ import datetime
 import json
 import sys
 import platform
-import paho.mqtt.client as mqtt
+from paho.mqtt.client import Client
+from paho.mqtt.enums import CallbackAPIVersion
 from ruuvitag_sensor.ruuvi import RuuviTagSensor
 from settings import my_brokers
 from settings import my_ruuvis
@@ -25,12 +26,12 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-myhostname = platform.node()
-found_ruuvis = []
-clients = {}
-SEND_SINGLE_VALUES = False
-last_data_time = {}
-last_discovery_resend = None
+MYHOSTNAME = platform.node()
+FOUND_RUUVIS = []
+CLIENTS = {}
+SEND_SINGLE_VALUES = False  # pylint: disable=invalid-name
+LAST_DATA_TIME = {}
+LAST_DISCOVERY_RESEND = None
 DISCOVERY_RESEND_INTERVAL = 3600
 
 def send_single(jdata, keyname, client):
@@ -68,18 +69,18 @@ def publish_discovery_config(room, found_data):
         "acceleration_x": {"class": None, "unit": "mG"},
         "acceleration_y": {"class": None, "unit": "mG"},
         "acceleration_z": {"class": None, "unit": "mG"},
-        f"rssi_{myhostname}": {"class": None, "unit": "dBm"},
+        f"rssi_{MYHOSTNAME}": {"class": None, "unit": "dBm"},
         "movement_counter": {"class": None, "unit": "times"}
     }
 
-    for s in sendvals:
+    for sensor_key, sensor_data in sendvals.items():
         payload = {
             "state_topic": f"home/{room}",
-            "unit_of_measurement": f"{sendvals[s]['unit']}",
-            "value_template": "{{ value_json." + s + " }}",
-            "unique_id": f"ruuvi{jdata['mac']}{s}",
-            "object_id": f"{room}_{s}",
-            "name": f"{s}",
+            "unit_of_measurement": f"{sensor_data['unit']}",
+            "value_template": "{{ value_json." + sensor_key + " }}",
+            "unique_id": f"ruuvi{jdata['mac']}{sensor_key}",
+            "object_id": f"{room}_{sensor_key}",
+            "name": f"{sensor_key}",
             "device": {
                 "identifiers": [
                     f"{room}"
@@ -89,13 +90,13 @@ def publish_discovery_config(room, found_data):
                 "model": "Ruuvitag"
             }
         }
-        if sendvals[s]['class'] is not None:
-            payload.update({"device_class": f"{sendvals[s]['class']}"})
-        topic = f"homeassistant/sensor/{room}_{s}/config"
+        if sensor_data['class'] is not None:
+            payload.update({"device_class": f"{sensor_data['class']}"})
+        topic = f"homeassistant/sensor/{room}_{sensor_key}/config"
         my_data = json.dumps(payload).replace("'", '"')
         logging.info("%s: %s", topic, my_data)
-        for b in my_brokers:
-            clients[b].publish(topic, my_data, retain=True)
+        for broker in my_brokers:
+            CLIENTS[broker].publish(topic, my_data, retain=True)
 
 def handle_data(found_data):
     """Handle Ruuvi tag sensor data.
@@ -106,49 +107,58 @@ def handle_data(found_data):
     Returns:
         None
     """
-    global found_ruuvis, last_data_time, last_discovery_resend
+    global LAST_DISCOVERY_RESEND
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     mac = found_data[0]
 
     # Track last data time for each sensor
-    last_data_time[mac] = now
+    LAST_DATA_TIME[mac] = now
 
     # Periodic discovery resend (once per hour)
-    if last_discovery_resend is None or (now - last_discovery_resend).total_seconds() > DISCOVERY_RESEND_INTERVAL:
-        logging.info("Periodic discovery resend triggered (interval: %d seconds)", DISCOVERY_RESEND_INTERVAL)
+    time_since_last_discovery = (
+        LAST_DISCOVERY_RESEND is None or
+        (now - LAST_DISCOVERY_RESEND).total_seconds() > DISCOVERY_RESEND_INTERVAL
+    )
+    if time_since_last_discovery:
+        logging.info(
+            "Periodic discovery resend triggered (interval: %d seconds)",
+            DISCOVERY_RESEND_INTERVAL
+        )
         force_rediscovery()
-        last_discovery_resend = now
+        LAST_DISCOVERY_RESEND = now
 
     logging.debug(found_data)
     try:
         room = my_ruuvis[found_data[0]]
-        if room not in found_ruuvis:
+        if room not in FOUND_RUUVIS:
             publish_discovery_config(room, found_data)
-            found_ruuvis.append(room)
-    except Exception as e:
+            FOUND_RUUVIS.append(room)
+    except KeyError as key_error:
         room = f"Ruuvi-{found_data[0].replace(':', '')}"
-        if room not in found_ruuvis:
-            logging.debug(e)
-            logging.warning("Not found %s. Using topic home/%s", found_data[0], room)
-            with open("detected_ruuvis.txt", "a", encoding="utf-8") as fp:
-                fp.write(f"{now.isoformat()} {room} {found_data}\n")
+        if room not in FOUND_RUUVIS:
+            logging.debug(key_error)
+            logging.warning(
+                "Not found %s. Using topic home/%s", found_data[0], room
+            )
+            with open("detected_ruuvis.txt", "a", encoding="utf-8") as file_handle:
+                file_handle.write(f"{now.isoformat()} {room} {found_data}\n")
             publish_discovery_config(room, found_data)
-            found_ruuvis.append(room)
+            FOUND_RUUVIS.append(room)
     topic = "home/" + room
     logging.debug(room)
     jdata = found_data[1]
     jdata.update({"room": room})
-    jdata.update({"client": myhostname})
+    jdata.update({"client": MYHOSTNAME})
     jdata.update({"ts": now.timestamp()})
     jdata.update({"ts_iso": now.isoformat()})
-    jdata.update({f"rssi_{myhostname}": jdata['rssi']})
+    jdata.update({f"rssi_{MYHOSTNAME}": jdata['rssi']})
     my_data = json.dumps(jdata).replace("'", '"')
     logging.debug(my_data)
-    for b in my_brokers:
-        clients[b].publish(topic, my_data)
+    for broker in my_brokers:
+        CLIENTS[broker].publish(topic, my_data)
         if SEND_SINGLE_VALUES:
-            for j in jdata:
-                send_single(jdata, j, clients[b])
+            for key in jdata:
+                send_single(jdata, key, CLIENTS[broker])
     logging.debug("-" * 40)
 
 def force_rediscovery():
@@ -157,34 +167,34 @@ def force_rediscovery():
     Returns:
         None
     """
-    global found_ruuvis
-    logging.info("Forcing discovery resend for all %d sensors", len(found_ruuvis))
-    found_ruuvis = []
+    global FOUND_RUUVIS
+    logging.info("Forcing discovery resend for all %d sensors", len(FOUND_RUUVIS))
+    FOUND_RUUVIS = []
 
-def on_connect(client, userdata, flags, rc, properties=None):
+def on_connect(client, userdata, flags, return_code, properties=None):
     """MQTT on_connect callback function.
 
     Args:
         client (mqtt.Client): The MQTT client.
         userdata: The user data.
         flags: Connection flags.
-        rc (int): Return code.
+        return_code (int): Return code.
 
     Returns:
         None
     """
-    global found_ruuvis
+    global FOUND_RUUVIS
 
-    logging.info("MQTT Connected to broker, return code: %s", rc)
+    logging.info("MQTT Connected to broker, return code: %s", return_code)
     logging.debug("%s %x %x", userdata, flags, properties)
-    if rc == 0:
+    if return_code == 0:
         logging.info("MQTT Connection successful")
         result = client.subscribe("homeassistant/status")
         logging.info("Subscribed to homeassistant/status, result: %s", result)
         logging.info("Clearing discovery cache to force resend on reconnection")
-        found_ruuvis = []
+        FOUND_RUUVIS = []
     else:
-        logging.error("Bad MQTT connection, return code: %s", rc)
+        logging.error("Bad MQTT connection, return code: %s", return_code)
 
 def on_message(client, userdata, msg, properties=None):
     """MQTT on_message callback function.
@@ -197,26 +207,27 @@ def on_message(client, userdata, msg, properties=None):
     Returns:
         None
     """
-    global found_ruuvis
     payload = msg.payload.decode()
     logging.info("Received MQTT message on topic %s: %s", msg.topic, payload)
     logging.debug("%s %s %s", client, userdata, properties)
     if payload == "online":
-        logging.warning("Home Assistant sent 'online' status - forcing discovery resend")
+        logging.warning(
+            "Home Assistant sent 'online' status - forcing discovery resend"
+        )
         force_rediscovery()
 
-def on_disconnect(client, userdata, flags, rc, properties=None):
+def on_disconnect(client, userdata, flags, return_code, properties=None):
     """MQTT on_disconnect callback function.
 
     Args:
         client (mqtt.Client): The MQTT client.
         userdata: The user data.
-        rc (int): Return code.
+        return_code (int): Return code.
 
     Returns:
         None
     """
-    if rc != 0:
+    if return_code != 0:
         logging.error("Unexpected MQTT disconnection.")
     logging.debug("%s %s %s %s", client, flags, userdata, properties)
 
@@ -230,19 +241,31 @@ def connect_brokers(brokers):
     Returns:
         dict: Dictionary containing connected MQTT clients.
     """
-    for b in brokers:
-        logging.info("Connecting Broker: %s %s", b, brokers[b])
-        # clients[b] = mqtt.Client(f"{myhostname}-ruuviclient")
-        clients[b] = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, f"{myhostname}-ruuviclient")
-        clients[b].on_connect = on_connect
-        clients[b].on_disconnect = on_disconnect
-        clients[b].on_message = on_message
-        clients[b].connect_async(brokers[b]['host'], brokers[b]['port'], 60)
-        logging.info("Connection OK %s %s", clients[b], brokers[b])
-        clients[b].loop_start()
-    return clients
+    for broker in brokers:
+        logging.info("Connecting Broker: %s %s", broker, brokers[broker])
+        # CLIENTS[broker] = Client(f"{MYHOSTNAME}-ruuviclient")
+        CLIENTS[broker] = Client(
+            CallbackAPIVersion.VERSION2, f"{MYHOSTNAME}-ruuviclient"
+        )
+        CLIENTS[broker].on_connect = on_connect
+        CLIENTS[broker].on_disconnect = on_disconnect
+        CLIENTS[broker].on_message = on_message
+        CLIENTS[broker].connect_async(
+            brokers[broker]['host'], brokers[broker]['port'], 60
+        )
+        logging.info("Connection OK %s %s", CLIENTS[broker], brokers[broker])
+        CLIENTS[broker].loop_start()
+    return CLIENTS
 
 async def main():
+    """Main async function for Bluetooth scanning.
+
+    Continuously scans for RuuviTag sensor data and processes it.
+    Logs warnings if no data is received for extended periods.
+
+    Returns:
+        None
+    """
     last_receive = datetime.datetime.now(tz=datetime.timezone.utc)
     logging.info("Starting async Bluetooth scanning...")
     async for found_data in RuuviTagSensor.get_data_async():
@@ -250,7 +273,11 @@ async def main():
         time_since_last = (now - last_receive).total_seconds()
 
         if time_since_last > 300:  # 5 minutes without data
-            logging.warning("No Bluetooth data received for %.0f seconds - possible Bluetooth issue", time_since_last)
+            logging.warning(
+                "No Bluetooth data received for %.0f seconds - "
+                "possible Bluetooth issue",
+                time_since_last
+            )
 
         logging.debug("MAC: %s", found_data[0])
         logging.debug("Data: %s", found_data[1])
@@ -259,11 +286,11 @@ async def main():
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == '-s':
-        SEND_SINGLE_VALUES = True
-    clients = connect_brokers(my_brokers)
+        SEND_SINGLE_VALUES = True  # pylint: disable=invalid-name
+    connect_brokers(my_brokers)
     try:
         # RuuviTagSensor.get_data(handle_data)
         asyncio.run(main())
-    except Exception as e:
-        logging.warning("async not working, trying get_datas: %s", e)
+    except (RuntimeError, NotImplementedError) as exc:
+        logging.warning("async not working, trying get_datas: %s", exc)
         RuuviTagSensor.get_datas(handle_data)

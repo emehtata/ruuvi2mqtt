@@ -9,9 +9,9 @@ import ruuvi2mqtt
 
 class TestPublishDiscoveryConfig(unittest.TestCase):
 
-    @patch('ruuvi2mqtt.clients')
+    @patch('ruuvi2mqtt.CLIENTS')
     @patch('ruuvi2mqtt.my_brokers', ['broker1', 'broker2'])
-    @patch('ruuvi2mqtt.myhostname', 'testhost')
+    @patch('ruuvi2mqtt.MYHOSTNAME', 'testhost')
     @patch('ruuvi2mqtt.logging')
     def test_publish_discovery_config(self, mock_logging, mock_clients):
         mock_clients['broker1'] = MagicMock()
@@ -95,11 +95,11 @@ class TestHomeAssistantRestart(unittest.TestCase):
 
     @patch('ruuvi2mqtt.logging')
     def test_on_connect_clears_found_ruuvis(self, mock_logging):
-        """Test that found_ruuvis is cleared when connecting to broker."""
+        """Test that FOUND_RUUVIS is cleared when connecting to broker."""
         ruuvi_module = ruuvi2mqtt
 
         # Set up initial state
-        ruuvi_module.found_ruuvis = ['living_room', 'bedroom']
+        ruuvi_module.FOUND_RUUVIS = ['living_room', 'bedroom']
 
         # Create mock client
         mock_client = MagicMock()
@@ -108,9 +108,9 @@ class TestHomeAssistantRestart(unittest.TestCase):
         # Call on_connect with successful connection (rc=0)
         ruuvi2mqtt.on_connect(mock_client, None, None, 0, None)
 
-        # Verify found_ruuvis was cleared
-        self.assertEqual(ruuvi_module.found_ruuvis, [],
-                        "found_ruuvis should be cleared on broker connect")
+        # Verify FOUND_RUUVIS was cleared
+        self.assertEqual(ruuvi_module.FOUND_RUUVIS, [],
+                        "FOUND_RUUVIS should be cleared on broker connect")
 
         # Verify subscription
         mock_client.subscribe.assert_called_once_with("homeassistant/status")
@@ -125,7 +125,7 @@ class TestHomeAssistantRestart(unittest.TestCase):
         ruuvi_module = ruuvi2mqtt
 
         # Set up initial state
-        ruuvi_module.found_ruuvis = ['living_room']
+        ruuvi_module.FOUND_RUUVIS = ['living_room']
 
         # Create mock client
         mock_client = MagicMock()
@@ -138,7 +138,7 @@ class TestHomeAssistantRestart(unittest.TestCase):
         mock_logging.error.assert_called_with("Bad MQTT connection, return code: %s", 1)
 
         # found_ruuvis should NOT be cleared on failed connection
-        self.assertEqual(ruuvi_module.found_ruuvis, ['living_room'],
+        self.assertEqual(ruuvi_module.FOUND_RUUVIS, ['living_room'],
                         "found_ruuvis should not be cleared on failed connection")
 
 
@@ -146,18 +146,18 @@ class TestForceRediscovery(unittest.TestCase):
 
     @patch('ruuvi2mqtt.logging')
     def test_force_rediscovery_clears_found_ruuvis(self, mock_logging):
-        """Test that force_rediscovery clears the found_ruuvis list."""
+        """Test that force_rediscovery clears the FOUND_RUUVIS list."""
         ruuvi_module = ruuvi2mqtt
 
         # Set up initial state
-        ruuvi_module.found_ruuvis = ['living_room', 'bedroom', 'kitchen']
+        ruuvi_module.FOUND_RUUVIS = ['living_room', 'bedroom', 'kitchen']
 
         # Call force_rediscovery
         ruuvi2mqtt.force_rediscovery()
 
-        # Verify found_ruuvis was cleared
-        self.assertEqual(ruuvi_module.found_ruuvis, [],
-                        "force_rediscovery should clear found_ruuvis")
+        # Verify FOUND_RUUVIS was cleared
+        self.assertEqual(ruuvi_module.FOUND_RUUVIS, [],
+                        "force_rediscovery should clear FOUND_RUUVIS")
 
         # Verify logging
         mock_logging.info.assert_called_with("Forcing discovery resend for all %d sensors", 3)
@@ -168,13 +168,13 @@ class TestForceRediscovery(unittest.TestCase):
         ruuvi_module = ruuvi2mqtt
 
         # Set up initial state
-        ruuvi_module.found_ruuvis = []
+        ruuvi_module.FOUND_RUUVIS = []
 
         # Call force_rediscovery
         ruuvi2mqtt.force_rediscovery()
 
-        # Verify found_ruuvis is still empty
-        self.assertEqual(ruuvi_module.found_ruuvis, [],
+        # Verify it's still empty
+        self.assertEqual(ruuvi_module.FOUND_RUUVIS, [],
                         "force_rediscovery should handle empty list")
 
         # Verify logging
@@ -185,7 +185,7 @@ class TestHandleDataPeriodicResend(unittest.TestCase):
 
     @patch('ruuvi2mqtt.force_rediscovery')
     @patch('ruuvi2mqtt.publish_discovery_config')
-    @patch('ruuvi2mqtt.clients')
+    @patch('ruuvi2mqtt.CLIENTS')
     @patch('ruuvi2mqtt.my_brokers', ['broker1'])
     @patch('ruuvi2mqtt.my_ruuvis', {'AA:BB:CC:DD:EE:FF': 'living_room'})
     @patch('ruuvi2mqtt.logging')
@@ -195,8 +195,8 @@ class TestHandleDataPeriodicResend(unittest.TestCase):
         ruuvi_module = ruuvi2mqtt
 
         # Set up initial state
-        ruuvi_module.last_discovery_resend = None
-        ruuvi_module.found_ruuvis = []
+        ruuvi_module.LAST_DISCOVERY_RESEND = None
+        ruuvi_module.FOUND_RUUVIS = []
         mock_clients['broker1'] = MagicMock()
 
         # Create test data
@@ -213,14 +213,14 @@ class TestHandleDataPeriodicResend(unittest.TestCase):
         mock_force_rediscovery.assert_called_once()
 
         # Verify last_discovery_resend was set
-        self.assertIsNotNone(ruuvi_module.last_discovery_resend)
+        self.assertIsNotNone(ruuvi_module.LAST_DISCOVERY_RESEND)
 
         # Verify logging
         mock_logging.info.assert_any_call("Periodic discovery resend triggered (interval: %d seconds)", 3600)
 
     @patch('ruuvi2mqtt.force_rediscovery')
     @patch('ruuvi2mqtt.publish_discovery_config')
-    @patch('ruuvi2mqtt.clients')
+    @patch('ruuvi2mqtt.CLIENTS')
     @patch('ruuvi2mqtt.my_brokers', ['broker1'])
     @patch('ruuvi2mqtt.my_ruuvis', {'AA:BB:CC:DD:EE:FF': 'living_room'})
     @patch('ruuvi2mqtt.logging')
@@ -231,8 +231,8 @@ class TestHandleDataPeriodicResend(unittest.TestCase):
 
         # Set up initial state - last resend was more than an hour ago
         past_time = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(seconds=3700)
-        ruuvi_module.last_discovery_resend = past_time
-        ruuvi_module.found_ruuvis = ['living_room']
+        ruuvi_module.LAST_DISCOVERY_RESEND = past_time
+        ruuvi_module.FOUND_RUUVIS = ['living_room']
         mock_clients['broker1'] = MagicMock()
 
         # Create test data
@@ -249,11 +249,11 @@ class TestHandleDataPeriodicResend(unittest.TestCase):
         mock_force_rediscovery.assert_called_once()
 
         # Verify last_discovery_resend was updated
-        self.assertGreater(ruuvi_module.last_discovery_resend, past_time)
+        self.assertGreater(ruuvi_module.LAST_DISCOVERY_RESEND, past_time)
 
     @patch('ruuvi2mqtt.force_rediscovery')
     @patch('ruuvi2mqtt.publish_discovery_config')
-    @patch('ruuvi2mqtt.clients')
+    @patch('ruuvi2mqtt.CLIENTS')
     @patch('ruuvi2mqtt.my_brokers', ['broker1'])
     @patch('ruuvi2mqtt.my_ruuvis', {'AA:BB:CC:DD:EE:FF': 'living_room'})
     @patch('ruuvi2mqtt.logging')
@@ -264,8 +264,8 @@ class TestHandleDataPeriodicResend(unittest.TestCase):
 
         # Set up initial state - last resend was just now
         recent_time = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(seconds=100)
-        ruuvi_module.last_discovery_resend = recent_time
-        ruuvi_module.found_ruuvis = ['living_room']
+        ruuvi_module.LAST_DISCOVERY_RESEND = recent_time
+        ruuvi_module.FOUND_RUUVIS = ['living_room']
         mock_clients['broker1'] = MagicMock()
 
         # Create test data
@@ -283,7 +283,7 @@ class TestHandleDataPeriodicResend(unittest.TestCase):
 
     @patch('ruuvi2mqtt.force_rediscovery')
     @patch('ruuvi2mqtt.publish_discovery_config')
-    @patch('ruuvi2mqtt.clients')
+    @patch('ruuvi2mqtt.CLIENTS')
     @patch('ruuvi2mqtt.my_brokers', ['broker1'])
     @patch('ruuvi2mqtt.my_ruuvis', {'AA:BB:CC:DD:EE:FF': 'living_room'})
     @patch('ruuvi2mqtt.logging')
@@ -293,9 +293,9 @@ class TestHandleDataPeriodicResend(unittest.TestCase):
         ruuvi_module = ruuvi2mqtt
 
         # Set up initial state
-        ruuvi_module.last_data_time = {}
-        ruuvi_module.last_discovery_resend = datetime.datetime.now(tz=datetime.timezone.utc)
-        ruuvi_module.found_ruuvis = ['living_room']
+        ruuvi_module.LAST_DATA_TIME = {}
+        ruuvi_module.LAST_DISCOVERY_RESEND = datetime.datetime.now(tz=datetime.timezone.utc)
+        ruuvi_module.FOUND_RUUVIS = ['living_room']
         mock_clients['broker1'] = MagicMock()
 
         mac = 'AA:BB:CC:DD:EE:FF'
@@ -311,15 +311,15 @@ class TestHandleDataPeriodicResend(unittest.TestCase):
         after = datetime.datetime.now(tz=datetime.timezone.utc)
 
         # Verify last_data_time was set for this MAC
-        self.assertIn(mac, ruuvi_module.last_data_time)
-        self.assertGreaterEqual(ruuvi_module.last_data_time[mac], before)
-        self.assertLessEqual(ruuvi_module.last_data_time[mac], after)
+        self.assertIn(mac, ruuvi_module.LAST_DATA_TIME)
+        self.assertGreaterEqual(ruuvi_module.LAST_DATA_TIME[mac], before)
+        self.assertLessEqual(ruuvi_module.LAST_DATA_TIME[mac], after)
 
 
 class TestHandleDataUnknownSensor(unittest.TestCase):
 
     @patch('ruuvi2mqtt.publish_discovery_config')
-    @patch('ruuvi2mqtt.clients')
+    @patch('ruuvi2mqtt.CLIENTS')
     @patch('ruuvi2mqtt.my_brokers', ['broker1'])
     @patch('ruuvi2mqtt.my_ruuvis', {})  # Empty - sensor not configured
     @patch('ruuvi2mqtt.logging')
@@ -329,8 +329,8 @@ class TestHandleDataUnknownSensor(unittest.TestCase):
         ruuvi_module = ruuvi2mqtt
 
         # Set up initial state
-        ruuvi_module.found_ruuvis = []
-        ruuvi_module.last_discovery_resend = datetime.datetime.now(tz=datetime.timezone.utc)
+        ruuvi_module.FOUND_RUUVIS = []
+        ruuvi_module.LAST_DISCOVERY_RESEND = datetime.datetime.now(tz=datetime.timezone.utc)
         mock_clients['broker1'] = MagicMock()
 
         mac = 'AA:BB:CC:DD:EE:FF'
@@ -410,8 +410,8 @@ class TestOnDisconnect(unittest.TestCase):
 
 class TestConnectBrokers(unittest.TestCase):
 
-    @patch('ruuvi2mqtt.mqtt.Client')
-    @patch('ruuvi2mqtt.myhostname', 'testhost')
+    @patch('ruuvi2mqtt.Client')
+    @patch('ruuvi2mqtt.MYHOSTNAME', 'testhost')
     @patch('ruuvi2mqtt.logging')
     def test_connect_brokers(self, mock_logging, mock_mqtt_client_class):
         """Test that connect_brokers creates and configures MQTT clients."""
@@ -426,7 +426,7 @@ class TestConnectBrokers(unittest.TestCase):
         }
 
         # Reset clients dict
-        ruuvi2mqtt.clients = {}
+        ruuvi2mqtt.CLIENTS = {}
 
         # Call connect_brokers
         result = ruuvi2mqtt.connect_brokers(test_brokers)
@@ -455,20 +455,20 @@ class TestHandleDataPublishesToMQTT(unittest.TestCase):
     @patch('ruuvi2mqtt.publish_discovery_config')
     @patch('ruuvi2mqtt.my_brokers', ['broker1', 'broker2'])
     @patch('ruuvi2mqtt.my_ruuvis', {'AA:BB:CC:DD:EE:FF': 'living_room'})
-    @patch('ruuvi2mqtt.myhostname', 'testhost')
+    @patch('ruuvi2mqtt.MYHOSTNAME', 'testhost')
     @patch('ruuvi2mqtt.logging')
     def test_handle_data_publishes_to_all_brokers(self, mock_logging, mock_publish_discovery):
         """Test that handle_data publishes sensor data to all configured brokers."""
         ruuvi_module = ruuvi2mqtt
 
         # Set up initial state
-        ruuvi_module.found_ruuvis = ['living_room']
-        ruuvi_module.last_discovery_resend = datetime.datetime.now(tz=datetime.timezone.utc)
+        ruuvi_module.FOUND_RUUVIS = ['living_room']
+        ruuvi_module.LAST_DISCOVERY_RESEND = datetime.datetime.now(tz=datetime.timezone.utc)
 
         # Create mock clients - must be a real dict
         mock_client1 = MagicMock()
         mock_client2 = MagicMock()
-        ruuvi_module.clients = {
+        ruuvi_module.CLIENTS = {
             'broker1': mock_client1,
             'broker2': mock_client2
         }
