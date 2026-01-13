@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the main application
 COPY ruuvi2mqtt.py .
 COPY settings.py.example .
+COPY VERSION .
 # Copy settings.py if it exists (will be ignored if not present)
 COPY settings.py* ./
 

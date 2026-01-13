@@ -25,7 +25,16 @@ setup:
 
 # Docker build, run, and management
 build:
-	docker build -f docker/Dockerfile-$(DISTRO) . -t $(TAG) --no-cache
+	@TODAY=$$(date +%Y.%-m.%-d); \
+	CURRENT_TAG=$$(git tag -l "$$TODAY" 2>/dev/null); \
+	if [ -z "$$CURRENT_TAG" ]; then \
+		echo "Creating new tag for $$TODAY"; \
+		git tag -a $$TODAY -m "Release $$TODAY" 2>/dev/null || true; \
+	fi; \
+	VERSION=$$(git describe --long --tags 2>/dev/null || echo "$$TODAY-0-unknown"); \
+	echo "$$VERSION" > VERSION; \
+	echo "Building version: $$VERSION"
+	docker build -f docker/Dockerfile-$(DISTRO) . -t $(TAG)
 
 run:
 	@docker volume create $(NAME)-data 2>/dev/null || true
@@ -116,22 +125,15 @@ test:
 	@echo "Running unit tests..."
 	@bash -c "source .venv/bin/activate && python -m pytest test_ruuvi2mqtt.py --cov=ruuvi2mqtt --cov-report=term-missing -v"
 
-# Version management (year.month.day-patch format)
+# Version management (year.month.day format, patch from git describe)
 tag:
 	@TODAY=$$(date +%Y.%-m.%-d); \
-	EXISTING=$$(git tag -l "$$TODAY-*" | sort -V | tail -1); \
-	if [ -z "$$EXISTING" ]; then \
-		NEWTAG="$$TODAY-1"; \
-	else \
-		PATCH=$$(echo $$EXISTING | cut -d'-' -f2); \
-		NEWPATCH=$$((PATCH + 1)); \
-		NEWTAG="$$TODAY-$$NEWPATCH"; \
-	fi; \
-	echo "Creating tag: $$NEWTAG"; \
-	git tag -a $$NEWTAG -m "Release $$NEWTAG"; \
-	echo "Tag created. Push with: git push origin $$NEWTAG"
+	git tag -a $$TODAY -m "Release $$TODAY" 2>/dev/null || echo "Tag $$TODAY already exists"; \
+	VERSION=$$(git describe --long --tags 2>/dev/null || echo "$$TODAY-0-unknown"); \
+	echo "$$VERSION" > VERSION; \
+	echo "Version set to: $$VERSION"
 
 tag-push:
-	@LATEST=$$(git describe --tags $$(git rev-list --tags --max-count=1)); \
-	echo "Pushing tag: $$LATEST"; \
-	git push origin $$LATEST
+	@TODAY=$$(date +%Y.%-m.%-d); \
+	echo "Pushing tag: $$TODAY"; \
+	git push origin $$TODAY

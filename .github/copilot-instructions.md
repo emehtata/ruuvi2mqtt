@@ -37,14 +37,15 @@ make volume-restore     # Import from settings.py.backup
 
 ### Versioning
 ```bash
-make tag                # Create new tag: YYYY.M.D-1 (auto-increments patch)
-make tag-push           # Push latest tag to remote
-make version            # Show current branch and release tags
+make tag                # Create new version: YYYY.M.D (manual tagging)
+make tag-push           # Push VERSION file and git tag to remote
 ```
-- Format: `year.month.day-patch` (e.g., `2026.1.13-1`, `2026.1.13-2`)
-- Multiple tags per day increment patch number automatically
-- Version displayed in logs and web UI (from `git describe --tags`)
-- Apps use `__version__` via `get_version()` function
+- Format: `year.month.day` (e.g., `2026.1.13`)
+- Version stored in `VERSION` file (tracked in git, copied to Docker image)
+- Patch number comes from `git describe --long` (commit count since tag)
+- `make build` auto-creates new tag if date changed
+- Version displayed in logs and web UI (e.g., `2026.1.13-5-g1a2b3c` = 5 commits since tag)
+- Works in containers (falls back to VERSION file when git unavailable)
 
 ### Testing
 ```bash

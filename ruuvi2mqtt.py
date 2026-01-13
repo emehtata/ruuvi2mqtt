@@ -12,9 +12,9 @@ import asyncio
 import logging
 import datetime
 import json
+import os
 import sys
 import platform
-import subprocess
 from paho.mqtt.client import Client
 from paho.mqtt.enums import CallbackAPIVersion
 from ruuvitag_sensor.ruuvi import RuuviTagSensor
@@ -22,15 +22,12 @@ from settings import my_brokers
 from settings import my_ruuvis
 
 def get_version():
-    """Get version from git tags or return 'dev'."""
+    """Get version from VERSION file."""
     try:
-        version = subprocess.check_output(
-            ['git', 'describe', '--tags', '--always'],
-            stderr=subprocess.DEVNULL,
-            text=True
-        ).strip()
-        return version
-    except (subprocess.CalledProcessError, FileNotFoundError):
+        version_file = os.path.join(os.path.dirname(__file__), 'VERSION')
+        with open(version_file, 'r', encoding='utf-8') as f:
+            return f.read().strip()
+    except FileNotFoundError:
         return 'dev'
 
 __version__ = get_version()
