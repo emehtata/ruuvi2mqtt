@@ -11,6 +11,7 @@ import json
 import os
 import sys
 import socket
+import subprocess
 import threading
 import time
 
@@ -19,6 +20,20 @@ from zeroconf import ServiceBrowser, ServiceListener, Zeroconf
 
 # Add parent directory to path to import settings
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+def get_version():
+    """Get version from git tags or return 'dev'."""
+    try:
+        version = subprocess.check_output(
+            ['git', 'describe', '--tags', '--always'],
+            stderr=subprocess.DEVNULL,
+            text=True
+        ).strip()
+        return version
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return 'dev'
+
+__version__ = get_version()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -199,7 +214,8 @@ def index():
     settings = load_settings()
     return render_template('index.html',
                           brokers=settings['brokers'],
-                          ruuvis=settings['ruuvis'])
+                          ruuvis=settings['ruuvis'],
+                          version=__version__)
 
 
 @app.route('/api/scan/mqtt', methods=['GET'])

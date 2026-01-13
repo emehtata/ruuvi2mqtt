@@ -115,3 +115,23 @@ test:
 	@bash -c "source .venv/bin/activate && pip install -q -r requirements.txt"
 	@echo "Running unit tests..."
 	@bash -c "source .venv/bin/activate && python -m pytest test_ruuvi2mqtt.py --cov=ruuvi2mqtt --cov-report=term-missing -v"
+
+# Version management (year.month.day-patch format)
+tag:
+	@TODAY=$$(date +%Y.%-m.%-d); \
+	EXISTING=$$(git tag -l "$$TODAY-*" | sort -V | tail -1); \
+	if [ -z "$$EXISTING" ]; then \
+		NEWTAG="$$TODAY-1"; \
+	else \
+		PATCH=$$(echo $$EXISTING | cut -d'-' -f2); \
+		NEWPATCH=$$((PATCH + 1)); \
+		NEWTAG="$$TODAY-$$NEWPATCH"; \
+	fi; \
+	echo "Creating tag: $$NEWTAG"; \
+	git tag -a $$NEWTAG -m "Release $$NEWTAG"; \
+	echo "Tag created. Push with: git push origin $$NEWTAG"
+
+tag-push:
+	@LATEST=$$(git describe --tags $$(git rev-list --tags --max-count=1)); \
+	echo "Pushing tag: $$LATEST"; \
+	git push origin $$LATEST

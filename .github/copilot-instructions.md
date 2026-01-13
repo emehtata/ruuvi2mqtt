@@ -35,6 +35,17 @@ make volume-backup      # Export settings.py to settings.py.backup
 make volume-restore     # Import from settings.py.backup
 ```
 
+### Versioning
+```bash
+make tag                # Create new tag: YYYY.M.D-1 (auto-increments patch)
+make tag-push           # Push latest tag to remote
+make version            # Show current branch and release tags
+```
+- Format: `year.month.day-patch` (e.g., `2026.1.13-1`, `2026.1.13-2`)
+- Multiple tags per day increment patch number automatically
+- Version displayed in logs and web UI (from `git describe --tags`)
+- Apps use `__version__` via `get_version()` function
+
 ### Testing
 ```bash
 make venv               # Create venv with dependencies

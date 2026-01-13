@@ -14,11 +14,26 @@ import datetime
 import json
 import sys
 import platform
+import subprocess
 from paho.mqtt.client import Client
 from paho.mqtt.enums import CallbackAPIVersion
 from ruuvitag_sensor.ruuvi import RuuviTagSensor
 from settings import my_brokers
 from settings import my_ruuvis
+
+def get_version():
+    """Get version from git tags or return 'dev'."""
+    try:
+        version = subprocess.check_output(
+            ['git', 'describe', '--tags', '--always'],
+            stderr=subprocess.DEVNULL,
+            text=True
+        ).strip()
+        return version
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return 'dev'
+
+__version__ = get_version()
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
@@ -285,6 +300,7 @@ async def main():
         last_receive = now
 
 if __name__ == '__main__':
+    logging.info("ruuvi2mqtt version %s", __version__)
     if len(sys.argv) > 1 and sys.argv[1] == '-s':
         SEND_SINGLE_VALUES = True  # pylint: disable=invalid-name
     connect_brokers(my_brokers)

@@ -11,6 +11,9 @@
         <header>
             <h1>🏷️ Ruuvi2MQTT Configuration</h1>
             <p class="subtitle">Configure MQTT brokers and RuuviTag sensor mappings</p>
+            {% if version %}
+            <p class="version">Version: {{ version }}</p>
+            {% endif %}
         </header>
 
         <main>

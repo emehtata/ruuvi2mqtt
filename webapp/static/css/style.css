@@ -38,6 +38,13 @@ header h1 {
     opacity: 0.9;
 }
 
+.version {
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin-top: 10px;
+    font-family: monospace;
+}
+
 main {
     padding: 40px;
 }
