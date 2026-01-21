@@ -137,3 +137,6 @@ tag-push:
 	@TODAY=$$(date +%Y.%-m.%-d); \
 	echo "Pushing tag: $$TODAY"; \
 	git push origin $$TODAY
+
+dev-run:
+	python3 ruuvi2mqtt.py

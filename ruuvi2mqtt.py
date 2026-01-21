@@ -45,6 +45,8 @@ SEND_SINGLE_VALUES = False  # pylint: disable=invalid-name
 LAST_DATA_TIME = {}
 LAST_DISCOVERY_RESEND = None
 DISCOVERY_RESEND_INTERVAL = 3600
+LAST_BLE_RECEIVE = None  # Track last Bluetooth receive time
+WATCHDOG_TIMEOUT = 60  # 1 minute without any BLE data triggers restart
 
 def send_single(jdata, keyname, client):
     """Send a single sensor value to the MQTT broker.
@@ -269,6 +271,42 @@ def connect_brokers(brokers):
         CLIENTS[broker].loop_start()
     return CLIENTS
 
+async def bluetooth_watchdog():
+    """Monitor Bluetooth scanning health and restart if needed.
+
+    Checks periodically if Bluetooth data is still being received.
+    If no data for WATCHDOG_TIMEOUT seconds, attempts to restart Bluetooth service.
+exits to allow container restart.
+
+    Returns:
+        None
+    """
+    while True:
+        await asyncio.sleep(60)  # Check every minute
+
+        if LAST_BLE_RECEIVE is None:
+            # Still waiting for first message
+            continue
+
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
+        time_since_last = (now - LAST_BLE_RECEIVE).total_seconds()
+
+        if time_since_last > WATCHDOG_TIMEOUT:
+            logging.error(
+                "Bluetooth watchdog: No data received for %.0f seconds (timeout: %d). "
+                "Bluetooth appears stuck. Exiting for container restart.",
+                time_since_last,
+                WATCHDOG_TIMEOUT
+            )
+            # Exit with error code to trigger container restart
+            sys.exit(1)
+        elif time_since_last > 30:  # Warning at 30 seconds
+            logging.warning(
+                "Bluetooth watchdog: No data received for %.0f seconds "
+                "(will exit at %d seconds)",
+                time_since_last,
+                WATCHDOG_TIMEOUT
+            )
 async def main():
     """Main async function for Bluetooth scanning.
 
@@ -278,23 +316,28 @@ async def main():
     Returns:
         None
     """
-    last_receive = datetime.datetime.now(tz=datetime.timezone.utc)
+    global LAST_BLE_RECEIVE
+
+    LAST_BLE_RECEIVE = datetime.datetime.now(tz=datetime.timezone.utc)
     logging.info("Starting async Bluetooth scanning...")
-    async for found_data in RuuviTagSensor.get_data_async():
-        now = datetime.datetime.now(tz=datetime.timezone.utc)
-        time_since_last = (now - last_receive).total_seconds()
 
-        if time_since_last > 300:  # 5 minutes without data
-            logging.warning(
-                "No Bluetooth data received for %.0f seconds - "
-                "possible Bluetooth issue",
-                time_since_last
-            )
+    # Start the watchdog task
+    watchdog_task = asyncio.create_task(bluetooth_watchdog())
 
-        logging.debug("MAC: %s", found_data[0])
-        logging.debug("Data: %s", found_data[1])
-        handle_data(found_data)
-        last_receive = now
+    try:
+        async for found_data in RuuviTagSensor.get_data_async():
+            now = datetime.datetime.now(tz=datetime.timezone.utc)
+            LAST_BLE_RECEIVE = now
+
+            logging.debug("MAC: %s", found_data[0])
+            logging.debug("Data: %s", found_data[1])
+            handle_data(found_data)
+    finally:
+        watchdog_task.cancel()
+        try:
+            await watchdog_task
+        except asyncio.CancelledError:
+            pass
 
 if __name__ == '__main__':
     logging.info("ruuvi2mqtt version %s", __version__)
