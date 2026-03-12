@@ -93,7 +93,7 @@ def publish_discovery_config(room, found_data):
             "unit_of_measurement": f"{sensor_data['unit']}",
             "value_template": "{{ value_json." + sensor_key + " }}",
             "unique_id": f"ruuvi{jdata['mac']}{sensor_key}",
-            "object_id": f"{room}_{sensor_key}",
+            "default_entity_id": f"sensor.{room}_{sensor_key}",
             "name": f"{sensor_key}",
             "device": {
                 "identifiers": [
