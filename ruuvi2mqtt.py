@@ -275,14 +275,13 @@ async def bluetooth_watchdog():
     """Monitor Bluetooth scanning health and restart if needed.
 
     Checks periodically if Bluetooth data is still being received.
-    If no data for WATCHDOG_TIMEOUT seconds, attempts to restart Bluetooth service.
-exits to allow container restart.
+    If no data for WATCHDOG_TIMEOUT seconds, exits to allow container restart.
 
     Returns:
         None
     """
     while True:
-        await asyncio.sleep(60)  # Check every minute
+        await asyncio.sleep(10)  # Check every 10 seconds
 
         if LAST_BLE_RECEIVE is None:
             # Still waiting for first message

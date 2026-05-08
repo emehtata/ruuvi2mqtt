@@ -136,11 +136,30 @@ The project includes a Jenkins pipeline (`Jenkinsfile`) that:
 
 ### Bluetooth Issues
 
+The application includes a built-in Bluetooth watchdog that monitors for data reception issues:
+- Checks every 10 seconds if Bluetooth data is being received
+- Exits after 60 seconds of no data (triggers container auto-restart)
+- Logs warnings at 30 seconds
+
+**Automated Fix (Recommended):**
+
+Set up automated monitoring to detect and fix Bluetooth issues:
+```bash
+chmod +x /home/rpi/work/ruuvi2mqtt/monitor-and-fix.sh
+
+# Add to crontab (runs every 5 minutes)
+crontab -e
+# Add: */5 * * * * /home/rpi/work/ruuvi2mqtt/monitor-and-fix.sh >> /tmp/ruuvi2mqtt-monitor.log 2>&1
+```
+
+The monitor script automatically restarts the Bluetooth service when it detects repeated container restarts. See [BLUETOOTH-MONITORING.md](BLUETOOTH-MONITORING.md) for details.
+
+**Manual Fix:**
+
 If the gateway stops receiving data:
 1. Check container logs: `make logs`
-2. The application will warn if no Bluetooth data has been received for 5 minutes
-3. Restart Bluetooth service: `sudo service bluetooth restart`
-4. Recreate container: `make rm && make run`
+2. Run the fix script: `./fix.sh`
+3. Or manually: `make rm && sudo service bluetooth restart && make run`
 
 ### Discovery Messages Not Appearing
 
