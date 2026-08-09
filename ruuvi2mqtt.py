@@ -91,7 +91,7 @@ def publish_discovery_config(room, found_data):
         payload = {
             "state_topic": f"home/{room}",
             "unit_of_measurement": f"{sensor_data['unit']}",
-            "value_template": "{{ value_json." + sensor_key + " }}",
+            "value_template": "{{ value_json." + sensor_key + " | default(none) }}",
             "unique_id": f"ruuvi{jdata['mac']}{sensor_key}",
             "default_entity_id": f"sensor.{room}_{sensor_key}",
             "name": f"{sensor_key}",
